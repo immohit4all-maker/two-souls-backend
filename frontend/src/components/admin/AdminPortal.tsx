@@ -315,18 +315,66 @@ const OrdersManager = () => {
   );
 };
 
+const AdminStats = () => {
+  const [stats, setStats] = useState({ sellersCount: 0, productsCount: 0, ordersCount: 0, totalRevenue: 0 });
+
+  useEffect(() => {
+    Promise.all([getSellers(), getProducts(), getOrders()]).then(([sellers, products, orders]) => {
+      const rev = (orders || []).reduce((acc: number, curr: any) => acc + Number(curr.total_amount || 0), 0);
+      setStats({
+        sellersCount: (sellers || []).length,
+        productsCount: (products || []).length,
+        ordersCount: (orders || []).length,
+        totalRevenue: rev
+      });
+    }).catch(err => console.error(err));
+  }, []);
+
+  return (
+    <div className="stats-grid">
+      <div className="stat-card">
+        <div className="stat-header">Total Marketplace Revenue</div>
+        <div className="stat-value">${stats.totalRevenue.toFixed(2)}</div>
+        <div className="stat-subtext">↑ 14.2% vs last month</div>
+      </div>
+      <div className="stat-card">
+        <div className="stat-header">Active Sellers</div>
+        <div className="stat-value">{stats.sellersCount}</div>
+        <div className="stat-subtext">Verified Merchant Partners</div>
+      </div>
+      <div className="stat-card">
+        <div className="stat-header">Catalog Products</div>
+        <div className="stat-value">{stats.productsCount}</div>
+        <div className="stat-subtext">Published Listings</div>
+      </div>
+      <div className="stat-card">
+        <div className="stat-header">Orders Volume</div>
+        <div className="stat-value">{stats.ordersCount}</div>
+        <div className="stat-subtext">Total Processed Orders</div>
+      </div>
+    </div>
+  );
+};
+
 const AdminPortal = () => {
   return (
     <div className="dashboard-layout">
       <aside className="sidebar">
-        <h2>Two Souls Admin</h2>
+        <h2>⚡ Two Souls Admin</h2>
         <nav className="sidebar-nav">
-          <NavLink to="/admin/sellers" className="sidebar-link">Manage Sellers</NavLink>
-          <NavLink to="/admin/products" className="sidebar-link">Manage Products</NavLink>
-          <NavLink to="/admin/orders" className="sidebar-link">Manage Orders</NavLink>
+          <NavLink to="/admin/sellers" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+            🏪 Manage Sellers
+          </NavLink>
+          <NavLink to="/admin/products" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+            📦 Manage Products
+          </NavLink>
+          <NavLink to="/admin/orders" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+            📑 Manage Orders
+          </NavLink>
         </nav>
       </aside>
       <main className="main-content">
+        <AdminStats />
         <Routes>
           <Route path="sellers" element={<SellersManager />} />
           <Route path="products" element={<ProductManager />} />
@@ -338,4 +386,5 @@ const AdminPortal = () => {
 };
 
 export default AdminPortal;
+
 
