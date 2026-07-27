@@ -270,3 +270,51 @@ body {
   justify-content: space-between;
   align-items: center;
 }
+
+/* Mobile Responsive Breakpoints */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0.85rem 1rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .navbar-logo {
+    font-size: 1.25rem;
+  }
+
+  .navbar-links {
+    gap: 0.4rem;
+  }
+
+  .navbar-links a {
+    padding: 0.4rem 0.85rem;
+    font-size: 0.85rem;
+  }
+
+  .storefront-container {
+    padding: 1.5rem 1rem;
+  }
+
+  .hero-banner {
+    padding: 2.25rem 1rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+  }
+
+  .hero-title {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+
+  .hero-subtitle {
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+    gap: 1.25rem;
+  }
+}
+

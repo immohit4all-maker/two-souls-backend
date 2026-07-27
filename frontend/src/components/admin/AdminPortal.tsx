@@ -144,27 +144,29 @@ const SellersManager = () => {
         <button className="btn-primary" onClick={() => { setEditingSeller(null); setIsModalOpen(true); }}>+ Add Seller</button>
       </div>
       {loading ? <div className="loading-spinner">Loading...</div> : (
-        <table className="data-table">
-          <thead>
-            <tr><th>Store Name</th><th>Business Name</th><th>Contact</th><th>Email</th><th>Status</th><th>Commission</th><th>Actions</th></tr>
-          </thead>
-          <tbody>
-            {sellers.map((s: any) => (
-              <tr key={s.seller_id}>
-                <td><strong>{s.store_name}</strong></td>
-                <td>{s.business_name}</td>
-                <td>{s.name}</td>
-                <td>{s.email}</td>
-                <td><span className={`status-pill ${s.status?.toLowerCase() || 'active'}`}>{s.status || 'ACTIVE'}</span></td>
-                <td>{s.commission_rate || 10}%</td>
-                <td>
-                  <button onClick={() => { setEditingSeller(s); setIsModalOpen(true); }} className="btn-primary" style={{ padding: '4px 8px', marginRight: '10px' }}>Edit</button>
-                  <button onClick={() => handleDeleteSeller(s.seller_id)} className="btn-danger">Delete</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="table-responsive">
+          <table className="data-table">
+            <thead>
+              <tr><th>Store Name</th><th>Business Name</th><th>Contact</th><th>Email</th><th>Status</th><th>Commission</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              {sellers.map((s: any) => (
+                <tr key={s.seller_id}>
+                  <td><strong>{s.store_name}</strong></td>
+                  <td>{s.business_name}</td>
+                  <td>{s.name}</td>
+                  <td>{s.email}</td>
+                  <td><span className={`status-pill ${s.status?.toLowerCase() || 'active'}`}>{s.status || 'ACTIVE'}</span></td>
+                  <td>{s.commission_rate || 10}%</td>
+                  <td>
+                    <button onClick={() => { setEditingSeller(s); setIsModalOpen(true); }} className="btn-primary" style={{ padding: '4px 8px', marginRight: '10px' }}>Edit</button>
+                    <button onClick={() => handleDeleteSeller(s.seller_id)} className="btn-danger">Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       <AddSellerModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAdd={handleSaveSeller} initialData={editingSeller} />
     </div>
@@ -217,31 +219,33 @@ const ProductManager = () => {
         </div>
       </div>
       {loading ? <div className="loading-spinner">Loading...</div> : (
-        <table className="data-table">
-          <thead>
-            <tr><th>Image</th><th>Title & SKU</th><th>Category</th><th>Buy Price</th><th>Sell Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr>
-          </thead>
-          <tbody>
-            {filteredProducts.map((p: any) => (
-              <tr key={p.product_id}>
-                <td>{p.imageUrl && <img src={p.imageUrl} alt={p.title} style={{ width: '45px', height: '45px', objectFit: 'cover', borderRadius: '6px' }} />}</td>
-                <td>
-                  <strong>{p.title}</strong>
-                  {p.sku && <div style={{ fontSize: '0.8rem', color: '#666' }}>SKU: {p.sku}</div>}
-                </td>
-                <td>{p.category}</td>
-                <td>${Number(p.buy_price || 0).toFixed(2)}</td>
-                <td><strong>${Number(p.sell_price || 0).toFixed(2)}</strong></td>
-                <td>{p.stock_quantity}</td>
-                <td><span className={`status-pill ${p.status?.toLowerCase() || 'published'}`}>{p.status || 'PUBLISHED'}</span></td>
-                <td>
-                  <button onClick={() => { setEditingProduct(p); setIsModalOpen(true); }} className="btn-primary" style={{ padding: '4px 8px', marginRight: '10px' }}>Edit</button>
-                  <button onClick={() => handleDeleteProduct(p.product_id)} className="btn-danger">Delete</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="table-responsive">
+          <table className="data-table">
+            <thead>
+              <tr><th>Image</th><th>Title & SKU</th><th>Category</th><th>Buy Price</th><th>Sell Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              {filteredProducts.map((p: any) => (
+                <tr key={p.product_id}>
+                  <td>{p.imageUrl && <img src={p.imageUrl} alt={p.title} style={{ width: '45px', height: '45px', objectFit: 'cover', borderRadius: '6px' }} />}</td>
+                  <td>
+                    <strong>{p.title}</strong>
+                    {p.sku && <div style={{ fontSize: '0.8rem', color: '#666' }}>SKU: {p.sku}</div>}
+                  </td>
+                  <td>{p.category}</td>
+                  <td>${Number(p.buy_price || 0).toFixed(2)}</td>
+                  <td><strong>${Number(p.sell_price || 0).toFixed(2)}</strong></td>
+                  <td>{p.stock_quantity}</td>
+                  <td><span className={`status-pill ${p.status?.toLowerCase() || 'published'}`}>{p.status || 'PUBLISHED'}</span></td>
+                  <td>
+                    <button onClick={() => { setEditingProduct(p); setIsModalOpen(true); }} className="btn-primary" style={{ padding: '4px 8px', marginRight: '10px' }}>Edit</button>
+                    <button onClick={() => handleDeleteProduct(p.product_id)} className="btn-danger">Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       <AddProductModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveProduct} initialData={editingProduct} />
     </div>
@@ -279,37 +283,39 @@ const OrdersManager = () => {
         <h3>Orders Management</h3>
       </div>
       {loading ? <div className="loading-spinner">Loading...</div> : (
-        <table className="data-table">
-          <thead>
-            <tr><th>Order ID</th><th>Customer</th><th>Total Amount</th><th>Payment Status</th><th>Fulfillment Status</th><th>Actions</th></tr>
-          </thead>
-          <tbody>
-            {orders.map((o: any) => (
-              <tr key={o.order_id}>
-                <td><strong>{o.order_number || o.order_id?.substring(0, 8)}</strong></td>
-                <td>{o.shipping_address?.full_name || o.customer_id || 'N/A'}</td>
-                <td><strong>${Number(o.total_amount || 0).toFixed(2)}</strong> ({o.currency || 'USD'})</td>
-                <td><span className="status-pill active">{o.payment_status || 'PAID'}</span></td>
-                <td>
-                  <select 
-                    value={o.status || 'PROCESSING'} 
-                    onChange={e => handleStatusChange(o, e.target.value)}
-                    style={{ padding: '4px 8px', borderRadius: '4px' }}
-                  >
-                    <option value="PENDING">PENDING</option>
-                    <option value="PROCESSING">PROCESSING</option>
-                    <option value="SHIPPED">SHIPPED</option>
-                    <option value="DELIVERED">DELIVERED</option>
-                    <option value="CANCELLED">CANCELLED</option>
-                  </select>
-                </td>
-                <td>
-                  <button onClick={() => handleDeleteOrder(o.order_id)} className="btn-danger">Delete</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="table-responsive">
+          <table className="data-table">
+            <thead>
+              <tr><th>Order ID</th><th>Customer</th><th>Total Amount</th><th>Payment Status</th><th>Fulfillment Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+              {orders.map((o: any) => (
+                <tr key={o.order_id}>
+                  <td><strong>{o.order_number || o.order_id?.substring(0, 8)}</strong></td>
+                  <td>{o.shipping_address?.full_name || o.customer_id || 'N/A'}</td>
+                  <td><strong>${Number(o.total_amount || 0).toFixed(2)}</strong> ({o.currency || 'USD'})</td>
+                  <td><span className="status-pill active">{o.payment_status || 'PAID'}</span></td>
+                  <td>
+                    <select 
+                      value={o.status || 'PROCESSING'} 
+                      onChange={e => handleStatusChange(o, e.target.value)}
+                      style={{ padding: '4px 8px', borderRadius: '4px' }}
+                    >
+                      <option value="PENDING">PENDING</option>
+                      <option value="PROCESSING">PROCESSING</option>
+                      <option value="SHIPPED">SHIPPED</option>
+                      <option value="DELIVERED">DELIVERED</option>
+                      <option value="CANCELLED">CANCELLED</option>
+                    </select>
+                  </td>
+                  <td>
+                    <button onClick={() => handleDeleteOrder(o.order_id)} className="btn-danger">Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
