@@ -1,0 +1,221 @@
+:root {
+  /* Spacing Scale (based on 4px units) */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+
+  /* Typography Scale */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.5rem;
+
+  /* Colors */
+  --color-bg: #f8fafc;
+  --color-sidebar: #0f172a;
+  --color-sidebar-text: #94a3b8;
+  --color-sidebar-active: #ffffff;
+  --color-card-bg: #ffffff;
+  --color-text-main: #1e293b;
+  --color-text-muted: #64748b;
+  --color-accent: #4f46e5;
+  --color-accent-hover: #4338ca;
+  --color-border: #e2e8f0;
+  --color-danger: #ef4444;
+  --color-danger-hover: #dc2626;
+
+  /* Elevation */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Base Styles */
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text-main);
+  line-height: 1.5;
+  height: 100vh;
+}
+
+/* Dashboard Layout */
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background-color: var(--color-sidebar);
+  color: var(--color-sidebar-text);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar h2 {
+  color: white;
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-2xl);
+  padding-left: var(--spacing-sm);
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.sidebar-link {
+  color: var(--color-sidebar-text);
+  text-decoration: none;
+  padding: var(--spacing-md);
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.sidebar-link:hover, .sidebar-link.active {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-sidebar-active);
+}
+
+.main-content {
+  padding: var(--spacing-xl);
+  overflow-y: auto;
+}
+
+.card {
+  background: var(--color-card-bg);
+  border-radius: 12px;
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Table Refinement */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--spacing-md);
+}
+
+.data-table th {
+  text-align: left;
+  padding: var(--spacing-md);
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  border-bottom: 2px solid var(--color-border);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.data-table td {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--font-size-base);
+}
+
+.data-table tbody tr:hover {
+  background-color: #f1f5f9;
+}
+
+/* --- Step 3: Actionable Components --- */
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--color-accent);
+  color: white;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-accent-hover);
+}
+
+.btn-danger {
+  background-color: var(--color-danger);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-danger:hover {
+  background-color: var(--color-danger-hover);
+}
+
+/* Inputs */
+.form-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.form-group label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-xs);
+}
+
+.form-input {
+  width: 100%;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: var(--font-size-base);
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* Modal Animations */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 0;
+  animation: fadeIn 0.2s forwards;
+}
+
+.modal-content {
+  background: var(--color-card-bg);
+  padding: var(--spacing-xl);
+  border-radius: 12px;
+  width: 400px;
+  box-shadow: var(--shadow-md);
+  transform: translateY(10px);
+  animation: slideUp 0.2s forwards;
+}
+
+@keyframes fadeIn { to { opacity: 1; } }
+@keyframes slideUp { to { transform: translateY(0); } }
