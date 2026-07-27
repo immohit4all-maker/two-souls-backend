@@ -6,6 +6,7 @@ from aws_cdk import (
     aws_s3 as s3,
     aws_secretsmanager as secretsmanager,
     aws_iam as iam,
+    aws_codebuild as codebuild,
     RemovalPolicy,
     Duration,
     SecretValue
@@ -161,6 +162,40 @@ class BackendStack(Stack):
                 oauth_token=github_token_secret.secret_value
             ),
             role=amplify_role,
+            build_spec=codebuild.BuildSpec.from_object_to_yaml({
+                "version": 1,
+                "applications": [
+                    {
+                        "frontend": {
+                            "phases": {
+                                "preBuild": {
+                                    "commands": [
+                                        "cd frontend",
+                                        "npm ci"
+                                    ]
+                                },
+                                "build": {
+                                    "commands": [
+                                        "npm run build"
+                                    ]
+                                }
+                            },
+                            "artifacts": {
+                                "baseDirectory": "frontend/dist",
+                                "files": [
+                                    "**/*"
+                                ]
+                            },
+                            "cache": {
+                                "paths": [
+                                    "frontend/node_modules/**/*"
+                                ]
+                            }
+                        },
+                        "appRoot": "frontend"
+                    }
+                ]
+            }),
             environment_variables={
                 "VITE_API_URL": api.url,
             },
@@ -168,3 +203,4 @@ class BackendStack(Stack):
             auto_branch_deletion=True
         )
         amplify_app.add_branch("main")
+
