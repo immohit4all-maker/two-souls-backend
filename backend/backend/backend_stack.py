@@ -5,7 +5,7 @@ from aws_cdk import (
     aws_apigateway as apigateway,
     aws_s3 as s3,
     aws_secretsmanager as secretsmanager,
-    aws_iam,
+    aws_iam as iam,
     RemovalPolicy,
     Duration,
     SecretValue
@@ -43,10 +43,10 @@ class BackendStack(Stack):
         )
 
         image_bucket.add_to_resource_policy(
-            aws_iam.PolicyStatement(
+            iam.PolicyStatement(
                 actions=["s3:GetObject"],
                 resources=[image_bucket.arn_for_objects("*")],
-                principals=[aws_iam.AnyPrincipal()]
+                principals=[iam.AnyPrincipal()]
             )
         )
 
@@ -120,32 +120,7 @@ class BackendStack(Stack):
         image_bucket.grant_put(handler)
         image_bucket.grant_read(handler)
 
-        # 4. Secret for GitHub Token (Programmatic creation)
-        github_token_secret = secretsmanager.Secret(
-            self, "GitHubTokenSecret",
-            secret_name="github-token",
-            secret_string_value=SecretValue.unsafe_plain_text(
-                self.node.try_get_context("github_token") or "dummy-token-for-init"
-            )
-        )
-
-        # 5. AWS Amplify for Frontend
-        amplify_app = amplify.App(
-            self, "TwoSoulsFrontendApp",
-            source_code_provider=amplify.GitHubSourceCodeProvider(
-                owner="immohit4all-maker",
-                repository="two-souls-backend",
-                oauth_token=github_token_secret.secret_value
-            ),
-            environment_variables={
-                "VITE_API_URL": "...", # Placeholder
-            },
-            auto_branch_creation=amplify.AutoBranchCreation(patterns=["main"]),
-            auto_branch_deletion=True
-        )
-        amplify_app.add_branch("main")
-
-        # 6. API Gateway with CORS
+        # 4. API Gateway with CORS
         api = apigateway.LambdaRestApi(
             self, "MarketplaceApi",
             rest_api_name="TwoSoulsMarketplaceApi",
@@ -158,3 +133,38 @@ class BackendStack(Stack):
             ),
             deploy_options=apigateway.StageOptions(stage_name="prod")
         )
+
+        # 5. Secret for GitHub Token
+        github_token_secret = secretsmanager.Secret(
+            self, "GitHubTokenSecret",
+            secret_name="github-token",
+            secret_string_value=SecretValue.unsafe_plain_text(
+                self.node.try_get_context("github_token") or "dummy-token-for-init"
+            )
+        )
+
+        # 6. IAM Role for Amplify
+        amplify_role = iam.Role(
+            self, "AmplifyServiceRole",
+            assumed_by=iam.ServicePrincipal("amplify.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("AdministratorAccess-Amplify")
+            ]
+        )
+
+        # 7. AWS Amplify for Frontend
+        amplify_app = amplify.App(
+            self, "TwoSoulsFrontendApp",
+            source_code_provider=amplify.GitHubSourceCodeProvider(
+                owner=self.node.try_get_context("repo_owner") or "immohit4all-maker",
+                repository=self.node.try_get_context("repo_name") or "two-souls-backend",
+                oauth_token=github_token_secret.secret_value
+            ),
+            role=amplify_role,
+            environment_variables={
+                "VITE_API_URL": api.url,
+            },
+            auto_branch_creation=amplify.AutoBranchCreation(patterns=["main"]),
+            auto_branch_deletion=True
+        )
+        amplify_app.add_branch("main")
