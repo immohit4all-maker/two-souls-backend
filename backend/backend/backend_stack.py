@@ -170,7 +170,6 @@ class BackendStack(Stack):
                             "phases": {
                                 "preBuild": {
                                     "commands": [
-                                        "cd frontend",
                                         "npm ci"
                                     ]
                                 },
@@ -181,14 +180,14 @@ class BackendStack(Stack):
                                 }
                             },
                             "artifacts": {
-                                "baseDirectory": "frontend/dist",
+                                "baseDirectory": "dist",
                                 "files": [
                                     "**/*"
                                 ]
                             },
                             "cache": {
                                 "paths": [
-                                    "frontend/node_modules/**/*"
+                                    "node_modules/**/*"
                                 ]
                             }
                         },
