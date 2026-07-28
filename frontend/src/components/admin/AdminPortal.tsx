@@ -362,11 +362,23 @@ const AdminStats = () => {
   );
 };
 
+import { useAuth } from '../../context/AuthContext';
+import AdminLogin from './AdminLogin';
+
 const AdminPortal = () => {
+  const { isAuthenticated, logout, user } = useAuth();
+
+  if (!isAuthenticated) {
+    return <AdminLogin />;
+  }
+
   return (
     <div className="dashboard-layout">
       <aside className="sidebar">
         <h2>⚡ Two Souls Admin</h2>
+        <div style={{ padding: '0 0.75rem 1rem', fontSize: '0.8rem', color: '#94a3b8' }}>
+          Logged in as: <strong style={{ color: '#ffffff' }}>{user?.username || 'admin'}</strong>
+        </div>
         <nav className="sidebar-nav">
           <NavLink to="/admin/sellers" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
             🏪 Manage Sellers
@@ -377,11 +389,25 @@ const AdminPortal = () => {
           <NavLink to="/admin/orders" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
             📑 Manage Orders
           </NavLink>
+          <button 
+            onClick={logout} 
+            className="sidebar-link" 
+            style={{ 
+              background: 'transparent', 
+              border: 'none', 
+              cursor: 'pointer', 
+              color: '#f87171',
+              marginTop: 'auto' 
+            }}
+          >
+            🚪 Sign Out
+          </button>
         </nav>
       </aside>
       <main className="main-content">
         <AdminStats />
         <Routes>
+          <Route path="/" element={<SellersManager />} />
           <Route path="sellers" element={<SellersManager />} />
           <Route path="products" element={<ProductManager />} />
           <Route path="orders" element={<OrdersManager />} />

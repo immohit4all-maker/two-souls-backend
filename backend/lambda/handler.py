@@ -48,6 +48,37 @@ def handler(event, context):
         return {'statusCode': 200, 'headers': headers, 'body': json.dumps({'uploadUrl': url})}
 
     resource = path[0] if len(path) > 0 else None
+
+    # Handle Admin Login endpoint
+    if resource == 'login':
+        if method == 'POST':
+            body = json.loads(event.get('body') or '{}')
+            username = body.get('username')
+            password = body.get('password')
+            
+            admin_user = os.environ.get('ADMIN_USERNAME', 'admin')
+            admin_pass = os.environ.get('ADMIN_PASSWORD', 'TwoSouls@2026!')
+
+            if username == admin_user and password == admin_pass:
+                # Generate simple auth token for session
+                session_token = str(uuid.uuid4())
+                return {
+                    'statusCode': 200,
+                    'headers': headers,
+                    'body': json.dumps({
+                        'success': True,
+                        'message': 'Authentication successful',
+                        'token': session_token,
+                        'user': { 'username': admin_user }
+                    })
+                }
+            else:
+                return {
+                    'statusCode': 401,
+                    'headers': headers,
+                    'body': json.dumps({'success': False, 'message': 'Invalid username or password'})
+                }
+        return {'statusCode': 405, 'headers': headers, 'body': json.dumps({'message': 'Method not allowed'})}
     
     if resource not in tables:
         return {'statusCode': 404, 'headers': headers, 'body': json.dumps({'message': 'Resource not found'})}

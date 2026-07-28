@@ -109,7 +109,9 @@ class BackendStack(Stack):
                 'PRODUCTS_TABLE': products_table.table_name,
                 'ORDERS_TABLE': orders_table.table_name,
                 'CUSTOMERS_TABLE': customers_table.table_name,
-                'BUCKET_NAME': image_bucket.bucket_name
+                'BUCKET_NAME': image_bucket.bucket_name,
+                'ADMIN_USERNAME': self.node.try_get_context("admin_username") or "admin",
+                'ADMIN_PASSWORD': self.node.try_get_context("admin_password") or "TwoSouls@2026!"
             }
         )
         
