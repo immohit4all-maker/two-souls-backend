@@ -1,31 +1,49 @@
-import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
-import AdminPortal from './components/admin/AdminPortal';
-import Storefront from './components/Storefront';
-import { AuthProvider } from './context/AuthContext';
-import './components/admin/Admin.css';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { AuthProvider } from './context/AuthProvider';
+import { CartProvider } from './context/CartProvider';
+import { CatalogProvider } from './context/CatalogProvider';
+import { ToastProvider } from './components/ui/ToastProvider';
+import { AdminPortal } from './components/admin/AdminPortal';
+import { Checkout } from './components/storefront/Checkout';
+import { Home } from './components/storefront/Home';
+import { NotFound } from './components/storefront/NotFound';
+import { OrderConfirmation } from './components/storefront/OrderConfirmation';
+import { ProductDetail } from './components/storefront/ProductDetail';
+import { StorefrontLayout } from './components/storefront/StorefrontLayout';
+
+/**
+ * Cart and catalogue are scoped to the shop branch rather than the whole app, so the admin
+ * area does not mount a shopping cart or kick off a second catalogue fetch.
+ */
+function StoreShell() {
+  return (
+    <CartProvider>
+      <CatalogProvider>
+        <StorefrontLayout />
+      </CatalogProvider>
+    </CartProvider>
+  );
+}
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <nav className="navbar">
-          <div className="navbar-logo">Two Souls</div>
-          <div className="navbar-links">
-            <NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : '')}>
-              Storefront
-            </NavLink>
-            <NavLink to="/admin" className={({ isActive }) => (isActive ? 'active' : '')}>
-              Admin Portal
-            </NavLink>
-          </div>
-        </nav>
-        
-        <Routes>
-          <Route path="/" element={<Storefront />} />
-          <Route path="/admin/*" element={<AdminPortal />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <ToastProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/admin/*" element={<AdminPortal />} />
+
+            <Route path="/" element={<StoreShell />}>
+              <Route index element={<Home />} />
+              <Route path="product/:productId" element={<ProductDetail />} />
+              <Route path="checkout" element={<Checkout />} />
+              <Route path="order/:orderNumber" element={<OrderConfirmation />} />
+              <Route path="*" element={<NotFound />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ToastProvider>
   );
 }
 

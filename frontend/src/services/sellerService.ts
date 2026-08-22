@@ -1,23 +1,26 @@
-import axios from 'axios';
+import { api } from '../lib/apiClient';
+import type { Seller, SellerInput } from '../types';
 
-const API_URL = import.meta.env.VITE_API_URL;
+interface WriteResponse<T> {
+  message?: string;
+  item?: T;
+}
 
-export const getSellers = async () => {
-  const response = await axios.get(`${API_URL}/sellers`);
-  return response.data;
-};
+export async function getSellers(): Promise<Seller[]> {
+  const { data } = await api.get<Seller[]>('/sellers');
+  return Array.isArray(data) ? data : [];
+}
 
-export const createSeller = async (seller: any) => {
-  const response = await axios.post(`${API_URL}/sellers`, seller);
-  return response.data;
-};
+export async function createSeller(seller: SellerInput): Promise<Seller | undefined> {
+  const { data } = await api.post<WriteResponse<Seller>>('/sellers', seller);
+  return data.item;
+}
 
-export const updateSeller = async (seller: any) => {
-  const response = await axios.put(`${API_URL}/sellers`, seller);
-  return response.data;
-};
+export async function updateSeller(seller: Seller): Promise<Seller | undefined> {
+  const { data } = await api.put<WriteResponse<Seller>>('/sellers', seller);
+  return data.item;
+}
 
-export const deleteSeller = async (id: string) => {
-  const response = await axios.delete(`${API_URL}/sellers`, { params: { id } });
-  return response.data;
-};
+export async function deleteSeller(id: string): Promise<void> {
+  await api.delete('/sellers', { params: { id } });
+}

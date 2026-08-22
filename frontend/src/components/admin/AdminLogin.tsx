@@ -1,107 +1,82 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import './Admin.css';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/auth-context';
+import { Button } from '../ui/Button';
+import { Field, TextInput } from '../ui/Field';
+import { Icon } from '../ui/Icon';
 
-const AdminLogin: React.FC = () => {
+export function AdminLogin() {
   const { login } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
     setError(null);
     setSubmitting(true);
 
     const result = await login(username, password);
-    setSubmitting(false);
 
+    // Only clear the pending state on failure — on success this component unmounts as the
+    // portal swaps in, and setting state afterwards would be a no-op warning.
     if (!result.success) {
-      setError(result.message || 'Invalid username or password');
+      setError(result.message ?? 'Invalid username or password.');
+      setSubmitting(false);
     }
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      minHeight: 'calc(100vh - 120px)',
-      padding: '2rem 1rem'
-    }}>
-      <div className="card" style={{ width: '420px', maxWidth: '100%', padding: '2.5rem' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{
-            fontSize: '2rem',
-            marginBottom: '0.5rem',
-            background: 'linear-gradient(135deg, #818cf8 0%, #6366f1 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            fontWeight: 800,
-            fontFamily: 'var(--font-heading)'
-          }}>
-            ⚡ Admin Authentication
-          </div>
-          <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>
-            Enter your administrative credentials to manage Two Souls marketplace.
-          </p>
+    <div className="login">
+      <div className="login-card">
+        <Link to="/" className="login-back">
+          <Icon name="arrow-left" size={15} />
+          Back to shop
+        </Link>
+
+        <div className="login-brand">
+          <span className="login-mark">
+            <Icon name="sparkle" size={20} filled />
+          </span>
+          <h1 className="login-title">Seller portal</h1>
+          <p className="login-sub">Sign in to manage the Two Souls marketplace.</p>
         </div>
 
         {error && (
-          <div style={{
-            background: 'rgba(239, 68, 68, 0.15)',
-            border: '1px solid rgba(239, 68, 68, 0.4)',
-            color: '#f87171',
-            padding: '0.75rem 1rem',
-            borderRadius: '10px',
-            fontSize: '0.85rem',
-            marginBottom: '1.5rem',
-            textAlign: 'center',
-            fontWeight: 600
-          }}>
-            ⚠️ {error}
+          <div className="login-error" role="alert">
+            <Icon name="alert" size={17} />
+            <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Username</label>
-            <input
-              type="text"
-              className="form-input"
+        <form className="login-form" onSubmit={handleSubmit} noValidate>
+          <Field label="Username" required>
+            <TextInput
               value={username}
-              onChange={e => setUsername(e.target.value)}
-              placeholder="e.g. admin"
-              required
+              onChange={(event) => setUsername(event.target.value)}
+              autoComplete="username"
               autoFocus
-            />
-          </div>
-
-          <div className="form-group" style={{ marginBottom: '2rem' }}>
-            <label>Password</label>
-            <input
-              type="password"
-              className="form-input"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••••••"
               required
             />
-          </div>
+          </Field>
 
-          <button
-            type="submit"
-            className="btn-primary"
-            disabled={submitting}
-            style={{ width: '100%', justifyContent: 'center', padding: '0.8rem', fontSize: '0.95rem' }}
-          >
-            {submitting ? 'Authenticating...' : 'Sign In to Portal 🔒'}
-          </button>
+          <Field label="Password" required>
+            <TextInput
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              autoComplete="current-password"
+              placeholder="••••••••••"
+              required
+            />
+          </Field>
+
+          <Button type="submit" size="lg" fullWidth loading={submitting} iconLeft="lock">
+            {submitting ? 'Signing in…' : 'Sign in'}
+          </Button>
         </form>
       </div>
     </div>
   );
-};
-
-export default AdminLogin;
+}

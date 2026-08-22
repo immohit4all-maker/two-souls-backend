@@ -1,0 +1,161 @@
+import { timestampOf, toNumber } from './format';
+import { stockOf } from './product';
+import type { Order, Product, Seller } from '../types';
+
+/** Cancelled orders are excluded from every revenue figure. */
+export function isCountedOrder(order: Order): boolean {
+  return (order.status ?? 'PENDING') !== 'CANCELLED';
+}
+
+export function revenueOf(order: Order): number {
+  return toNumber(order.total_amount);
+}
+
+export function totalRevenue(orders: Order[]): number {
+  return orders.filter(isCountedOrder).reduce((sum, order) => sum + revenueOf(order), 0);
+}
+
+/**
+ * Month-over-month revenue change as a percentage.
+ *
+ * Returns null when there is no usable baseline — no orders last month, or no timestamps to
+ * bucket by. The dashboard renders that as an em dash rather than inventing a number, which is
+ * what the previous hardcoded "↑ 14.2% vs last month" did.
+ */
+export function revenueDeltaPercent(orders: Order[], now: Date = new Date()): number | null {
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+
+  let current = 0;
+  let previous = 0;
+
+  for (const order of orders) {
+    if (!isCountedOrder(order)) continue;
+    const at = timestampOf(order);
+    if (at === null) continue;
+
+    if (at >= thisMonthStart) current += revenueOf(order);
+    else if (at >= lastMonthStart) previous += revenueOf(order);
+  }
+
+  if (previous <= 0) return null;
+  return ((current - previous) / previous) * 100;
+}
+
+/** Count of orders created this month vs last, same null-baseline rule. */
+export function countDeltaPercent(orders: Order[], now: Date = new Date()): number | null {
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+
+  let current = 0;
+  let previous = 0;
+
+  for (const order of orders) {
+    const at = timestampOf(order);
+    if (at === null) continue;
+    if (at >= thisMonthStart) current += 1;
+    else if (at >= lastMonthStart) previous += 1;
+  }
+
+  if (previous <= 0) return null;
+  return ((current - previous) / previous) * 100;
+}
+
+export interface DayPoint {
+  key: string;
+  label: string;
+  value: number;
+}
+
+function dayKey(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+    date.getDate(),
+  ).padStart(2, '0')}`;
+}
+
+/** Daily revenue for the trailing `days` days, oldest first. Days with no orders are zero. */
+export function dailyRevenue(orders: Order[], days = 30, now: Date = new Date()): DayPoint[] {
+  const buckets = new Map<string, number>();
+  const labelFormat = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
+  const series: DayPoint[] = [];
+
+  for (let offset = days - 1; offset >= 0; offset -= 1) {
+    const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - offset);
+    const key = dayKey(date);
+    buckets.set(key, 0);
+    series.push({ key, label: labelFormat.format(date), value: 0 });
+  }
+
+  for (const order of orders) {
+    if (!isCountedOrder(order)) continue;
+    const at = timestampOf(order);
+    if (at === null) continue;
+    const key = dayKey(new Date(at));
+    const existing = buckets.get(key);
+    if (existing !== undefined) buckets.set(key, existing + revenueOf(order));
+  }
+
+  return series.map((point) => ({ ...point, value: buckets.get(point.key) ?? 0 }));
+}
+
+export interface StatusSlice {
+  status: string;
+  count: number;
+}
+
+export function statusBreakdown(orders: Order[]): StatusSlice[] {
+  const counts = new Map<string, number>();
+  for (const order of orders) {
+    const status = order.status ?? 'PENDING';
+    counts.set(status, (counts.get(status) ?? 0) + 1);
+  }
+  return Array.from(counts, ([status, count]) => ({ status, count })).sort(
+    (a, b) => b.count - a.count,
+  );
+}
+
+export interface NamedValue {
+  label: string;
+  value: number;
+}
+
+/**
+ * Revenue attributed to each seller, derived from order line items.
+ *
+ * Lines without a `seller_id` are grouped under "Unattributed" rather than dropped, so the bars
+ * always add up to something an operator can reconcile against total revenue.
+ */
+export function revenueBySeller(orders: Order[], sellers: Seller[], limit = 5): NamedValue[] {
+  const names = new Map(sellers.map((seller) => [seller.seller_id, seller.store_name]));
+  const totals = new Map<string, number>();
+
+  for (const order of orders) {
+    if (!isCountedOrder(order)) continue;
+    for (const item of order.items ?? []) {
+      const label = item.seller_id ? (names.get(item.seller_id) ?? 'Unknown seller') : 'Unattributed';
+      totals.set(label, (totals.get(label) ?? 0) + toNumber(item.line_total));
+    }
+  }
+
+  return Array.from(totals, ([label, value]) => ({ label, value }))
+    .filter((entry) => entry.value > 0)
+    .sort((a, b) => b.value - a.value)
+    .slice(0, limit);
+}
+
+export function lowStockProducts(products: Product[], threshold = 5): Product[] {
+  return products
+    .filter((product) => {
+      if (product.status === 'ARCHIVED') return false;
+      const stock = stockOf(product);
+      return stock !== undefined && stock <= threshold;
+    })
+    .sort((a, b) => (stockOf(a) ?? 0) - (stockOf(b) ?? 0));
+}
+
+/** Newest first, using whichever timestamp the record has. */
+export function recentOrders(orders: Order[], limit = 5): Order[] {
+  return [...orders]
+    .sort((a, b) => (timestampOf(b) ?? 0) - (timestampOf(a) ?? 0))
+    .slice(0, limit);
+}

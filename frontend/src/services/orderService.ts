@@ -1,23 +1,26 @@
-import axios from 'axios';
+import { api } from '../lib/apiClient';
+import type { Order, OrderInput } from '../types';
 
-const API_URL = import.meta.env.VITE_API_URL;
+interface WriteResponse<T> {
+  message?: string;
+  item?: T;
+}
 
-export const getOrders = async () => {
-  const response = await axios.get(`${API_URL}/orders`);
-  return response.data;
-};
+export async function getOrders(): Promise<Order[]> {
+  const { data } = await api.get<Order[]>('/orders');
+  return Array.isArray(data) ? data : [];
+}
 
-export const createOrder = async (order: any) => {
-  const response = await axios.post(`${API_URL}/orders`, order);
-  return response.data;
-};
+export async function createOrder(order: OrderInput): Promise<Order | undefined> {
+  const { data } = await api.post<WriteResponse<Order>>('/orders', order);
+  return data.item;
+}
 
-export const updateOrder = async (order: any) => {
-  const response = await axios.put(`${API_URL}/orders`, order);
-  return response.data;
-};
+export async function updateOrder(order: Order): Promise<Order | undefined> {
+  const { data } = await api.put<WriteResponse<Order>>('/orders', order);
+  return data.item;
+}
 
-export const deleteOrder = async (id: string) => {
-  const response = await axios.delete(`${API_URL}/orders`, { params: { id } });
-  return response.data;
-};
+export async function deleteOrder(id: string): Promise<void> {
+  await api.delete('/orders', { params: { id } });
+}
