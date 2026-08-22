@@ -115,16 +115,25 @@ export function OrderDetailDrawer({ order, onClose }: OrderDetailDrawerProps) {
                         <Icon name="store" size={15} />
                         {group.dealer?.store_name ?? 'No dealer assigned'}
                       </span>
-                      {group.dealer?.email ? (
-                        <a className="sourcing-contact" href={`mailto:${group.dealer.email}`}>
-                          <Icon name="mail" size={14} />
-                          {group.dealer.email}
-                        </a>
-                      ) : (
+                      {/* Distinguish "no dealer on this item" from "dealer has no contact
+                          details" — email and phone are both optional on a dealer record. */}
+                      {!group.dealer ? (
                         <span className="sourcing-warn">
                           <Icon name="alert" size={14} />
                           Assign a dealer
                         </span>
+                      ) : group.dealer.email ? (
+                        <a className="sourcing-contact" href={`mailto:${group.dealer.email}`}>
+                          <Icon name="mail" size={14} />
+                          {group.dealer.email}
+                        </a>
+                      ) : group.dealer.phone_number ? (
+                        <a className="sourcing-contact" href={`tel:${group.dealer.phone_number}`}>
+                          <Icon name="phone" size={14} />
+                          {group.dealer.phone_number}
+                        </a>
+                      ) : (
+                        <span className="cell-sub">No contact details</span>
                       )}
                     </div>
 

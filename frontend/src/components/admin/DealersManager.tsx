@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAdminData } from '../../context/admin-data-context';
 import { errorMessage } from '../../lib/apiClient';
-import { formatDate, initials, pluralize, toNumber } from '../../lib/format';
+import { formatDate, initials, pluralize } from '../../lib/format';
 import { createDealer, deleteDealer, updateDealer } from '../../services/dealerService';
 import { Button } from '../ui/Button';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
@@ -82,7 +82,7 @@ export function DealersManager() {
       render: (dealer) => (
         <div>
           <p>{dealer.name || '—'}</p>
-          {dealer.email && <p className="cell-sub">{dealer.email}</p>}
+          <p className="cell-sub">{dealer.email || dealer.phone_number || 'No contact details'}</p>
         </div>
       ),
     },
@@ -105,13 +105,6 @@ export function DealersManager() {
       header: 'Status',
       sortValue: (dealer) => dealer.status ?? 'ACTIVE',
       render: (dealer) => <StatusBadge status={dealer.status} fallback="ACTIVE" />,
-    },
-    {
-      key: 'rate',
-      header: 'Agreed rate',
-      align: 'right',
-      sortValue: (dealer) => toNumber(dealer.commission_rate, 10),
-      render: (dealer) => `${toNumber(dealer.commission_rate, 10)}%`,
     },
     {
       key: 'added',

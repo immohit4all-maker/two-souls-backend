@@ -40,7 +40,10 @@ export interface Dealer {
   phone_number?: string;
   tax_id?: string;
   status?: DealerStatus;
-  /** Percentage held over from the marketplace model — see the note in DealerFormModal. */
+  /**
+   * Retired. Left over from the marketplace model and no longer shown or editable, but still
+   * carried through on writes so existing stored values are not wiped by an edit.
+   */
   commission_rate?: Numeric;
   created_at?: string;
   updated_at?: string;

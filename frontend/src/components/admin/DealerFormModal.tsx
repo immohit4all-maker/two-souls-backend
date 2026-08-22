@@ -7,24 +7,22 @@ import type { Dealer, DealerInput, DealerStatus } from '../../types';
 
 interface DealerForm {
   store_name: string;
-  business_name: string;
   name: string;
+  status: DealerStatus;
   email: string;
   phone_number: string;
+  business_name: string;
   tax_id: string;
-  commission_rate: string;
-  status: DealerStatus;
 }
 
 const EMPTY: DealerForm = {
   store_name: '',
-  business_name: '',
   name: '',
+  status: 'ACTIVE',
   email: '',
   phone_number: '',
+  business_name: '',
   tax_id: '',
-  commission_rate: '10',
-  status: 'ACTIVE',
 };
 
 type Errors = Partial<Record<keyof DealerForm, string>>;
@@ -32,29 +30,24 @@ type Errors = Partial<Record<keyof DealerForm, string>>;
 function toForm(dealer: Dealer): DealerForm {
   return {
     store_name: dealer.store_name ?? '',
-    business_name: dealer.business_name ?? '',
     name: dealer.name ?? '',
+    status: dealer.status ?? 'ACTIVE',
     email: dealer.email ?? '',
     phone_number: dealer.phone_number ?? '',
+    business_name: dealer.business_name ?? '',
     tax_id: dealer.tax_id ?? '',
-    commission_rate: dealer.commission_rate === undefined ? '10' : String(dealer.commission_rate),
-    status: dealer.status ?? 'ACTIVE',
   };
 }
 
+/** Only the dealer name and a contact are mandatory; status always has a default. */
 function validate(form: DealerForm): Errors {
   const errors: Errors = {};
   if (!form.store_name.trim()) errors.store_name = 'Dealer name is required.';
-  if (!form.business_name.trim()) errors.business_name = 'Registered business name is required.';
   if (!form.name.trim()) errors.name = 'Contact name is required.';
 
-  if (!form.email.trim()) errors.email = 'Email is required.';
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.trim()))
+  // Optional, but must be well-formed when supplied.
+  if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.trim())) {
     errors.email = 'Enter a valid email address.';
-
-  const rate = Number.parseFloat(form.commission_rate);
-  if (!Number.isFinite(rate) || rate < 0 || rate > 100) {
-    errors.commission_rate = 'Enter a rate between 0 and 100.';
   }
 
   return errors;
@@ -93,17 +86,17 @@ export function DealerFormModal({ initial, onClose, onSave }: DealerFormModalPro
     setSubmitting(true);
     try {
       await onSave({
-        ...(initial?.seller_id ? { seller_id: initial.seller_id } : {}),
-        ...(initial?.created_at ? { created_at: initial.created_at } : {}),
+        // The API's PUT replaces the whole record, so start from the existing one. That keeps
+        // any stored field this form does not render — such as the retired commission_rate —
+        // from being silently wiped on the next edit.
+        ...(initial ?? {}),
         store_name: form.store_name.trim(),
-        business_name: form.business_name.trim(),
         name: form.name.trim(),
-        email: form.email.trim(),
-        phone_number: form.phone_number.trim() || undefined,
-        tax_id: form.tax_id.trim() || undefined,
-        // Sent as a string: a JSON float breaks this backend's DynamoDB write.
-        commission_rate: form.commission_rate.trim(),
         status: form.status,
+        email: form.email.trim() || undefined,
+        phone_number: form.phone_number.trim() || undefined,
+        business_name: form.business_name.trim() || undefined,
+        tax_id: form.tax_id.trim() || undefined,
       });
     } catch {
       // The manager surfaces the error as a toast; keep the dialog open for a retry.
@@ -131,14 +124,11 @@ export function DealerFormModal({ initial, onClose, onSave }: DealerFormModalPro
       }
     >
       <div className="form-grid">
-        <Field label="Dealer name" required error={errors.store_name}>
-          <TextInput value={form.store_name} onChange={(e) => update('store_name', e.target.value)} />
-        </Field>
-
-        <Field label="Registered business" required error={errors.business_name}>
+        <Field label="Dealer name" required error={errors.store_name} className="field-full">
           <TextInput
-            value={form.business_name}
-            onChange={(e) => update('business_name', e.target.value)}
+            value={form.store_name}
+            onChange={(e) => update('store_name', e.target.value)}
+            placeholder="Who you order from"
           />
         </Field>
 
@@ -146,7 +136,25 @@ export function DealerFormModal({ initial, onClose, onSave }: DealerFormModalPro
           <TextInput value={form.name} onChange={(e) => update('name', e.target.value)} />
         </Field>
 
-        <Field label="Email" required error={errors.email}>
+        <Field label="Status" error={errors.status}>
+          <SelectInput value={form.status} onChange={(e) => update('status', e.target.value)}>
+            {DEALER_STATUSES.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </SelectInput>
+        </Field>
+
+        <p className="form-divider field-full">
+          <span>Optional details</span>
+        </p>
+
+        <Field
+          label="Email"
+          error={errors.email}
+          hint="Used to contact them from an order's sourcing list"
+        >
           <TextInput type="email" value={form.email} onChange={(e) => update('email', e.target.value)} />
         </Field>
 
@@ -158,39 +166,15 @@ export function DealerFormModal({ initial, onClose, onSave }: DealerFormModalPro
           />
         </Field>
 
-        <Field label="Tax ID / GSTIN" error={errors.tax_id}>
-          <TextInput value={form.tax_id} onChange={(e) => update('tax_id', e.target.value)} />
-        </Field>
-
-        {/*
-          Backed by the `commission_rate` field, which came from the earlier marketplace model.
-          Labelled neutrally rather than repurposed, because existing records may hold a value
-          that meant something different. Rename once the dealer terms are settled.
-        */}
-        <Field
-          label="Agreed rate (%)"
-          required
-          error={errors.commission_rate}
-          hint="Your commercial rate with this dealer"
-        >
+        <Field label="Registered business" error={errors.business_name}>
           <TextInput
-            type="number"
-            step="0.1"
-            min="0"
-            max="100"
-            value={form.commission_rate}
-            onChange={(e) => update('commission_rate', e.target.value)}
+            value={form.business_name}
+            onChange={(e) => update('business_name', e.target.value)}
           />
         </Field>
 
-        <Field label="Status" error={errors.status}>
-          <SelectInput value={form.status} onChange={(e) => update('status', e.target.value)}>
-            {DEALER_STATUSES.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </SelectInput>
+        <Field label="Tax ID / GSTIN" error={errors.tax_id}>
+          <TextInput value={form.tax_id} onChange={(e) => update('tax_id', e.target.value)} />
         </Field>
       </div>
     </Modal>
