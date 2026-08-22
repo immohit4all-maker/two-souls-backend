@@ -6,7 +6,7 @@ import { Field, SelectInput, TextArea, TextInput } from '../ui/Field';
 import { Icon } from '../ui/Icon';
 import { Modal } from '../ui/Modal';
 import { PRODUCT_STATUSES } from '../../types';
-import type { Product, ProductInput, ProductStatus, Seller } from '../../types';
+import type { Dealer, Product, ProductInput, ProductStatus } from '../../types';
 
 interface ProductForm {
   title: string;
@@ -70,13 +70,13 @@ function validate(form: ProductForm): Errors {
 
 export interface ProductFormModalProps {
   initial: Product | null;
-  sellers: Seller[];
+  dealers: Dealer[];
   onClose: () => void;
   onSave: (input: ProductInput) => Promise<void>;
 }
 
-/** Mounted only while open — see the note on SellerFormModal for why. */
-export function ProductFormModal({ initial, sellers, onClose, onSave }: ProductFormModalProps) {
+/** Mounted only while open — see the note on DealerFormModal for why. */
+export function ProductFormModal({ initial, dealers, onClose, onSave }: ProductFormModalProps) {
   const [form, setForm] = useState<ProductForm>(() => (initial ? toForm(initial) : EMPTY));
   const [errors, setErrors] = useState<Errors>({});
   const [submitting, setSubmitting] = useState(false);
@@ -187,7 +187,7 @@ export function ProductFormModal({ initial, sellers, onClose, onSave }: ProductF
           />
         </Field>
 
-        <Field label="Cost price" required error={errors.buy_price} hint="What you pay the maker">
+        <Field label="Cost price" required error={errors.buy_price} hint="What you pay the dealer">
           <TextInput
             type="number"
             step="0.01"
@@ -227,12 +227,17 @@ export function ProductFormModal({ initial, sellers, onClose, onSave }: ProductF
           </SelectInput>
         </Field>
 
-        <Field label="Seller" error={errors.seller_id} className="field-full">
+        <Field
+          label="Sourced from"
+          error={errors.seller_id}
+          hint="Which dealer you order this item from. Private — never shown to customers."
+          className="field-full"
+        >
           <SelectInput value={form.seller_id} onChange={(e) => update('seller_id', e.target.value)}>
             <option value="">Unassigned</option>
-            {sellers.map((seller) => (
-              <option key={seller.seller_id} value={seller.seller_id}>
-                {seller.store_name}
+            {dealers.map((dealer) => (
+              <option key={dealer.seller_id} value={dealer.seller_id}>
+                {dealer.store_name}
               </option>
             ))}
           </SelectInput>

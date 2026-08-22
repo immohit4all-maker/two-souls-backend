@@ -10,11 +10,10 @@ import type { Product } from '../../types';
 
 export interface ProductCardProps {
   product: Product;
-  sellerName?: string;
   eagerImage?: boolean;
 }
 
-export function ProductCard({ product, sellerName, eagerImage = false }: ProductCardProps) {
+export function ProductCard({ product, eagerImage = false }: ProductCardProps) {
   const { addItem } = useCart();
   const toast = useToast();
   const savedIds = useSavedIds();
@@ -69,8 +68,6 @@ export function ProductCard({ product, sellerName, eagerImage = false }: Product
             {product.title}
           </Link>
         </h3>
-
-        {sellerName && <p className="product-seller">by {sellerName}</p>}
 
         <div className="product-card-footer">
           <span className="product-price">{formatCurrency(product.sell_price)}</span>

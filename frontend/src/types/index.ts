@@ -8,8 +8,8 @@
  */
 export type Numeric = string | number;
 
-export const SELLER_STATUSES = ['ACTIVE', 'PENDING', 'SUSPENDED', 'INACTIVE'] as const;
-export type SellerStatus = (typeof SELLER_STATUSES)[number];
+export const DEALER_STATUSES = ['ACTIVE', 'PENDING', 'SUSPENDED', 'INACTIVE'] as const;
+export type DealerStatus = (typeof DEALER_STATUSES)[number];
 
 export const PRODUCT_STATUSES = ['PUBLISHED', 'DRAFT', 'OUT_OF_STOCK', 'ARCHIVED'] as const;
 export type ProductStatus = (typeof PRODUCT_STATUSES)[number];
@@ -20,16 +20,27 @@ export type OrderStatus = (typeof ORDER_STATUSES)[number];
 export const PAYMENT_STATUSES = ['PENDING', 'PAID', 'REFUNDED', 'FAILED'] as const;
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 
-export interface Seller {
+/**
+ * A supplier the business sources stock from. Private to the admin portal — dealers are never
+ * named on the storefront.
+ *
+ * The wire format still calls this a "seller" (`seller_id`, `store_name`, the `/sellers`
+ * endpoint) because that is what the DynamoDB table and Lambda use. Renaming those would need a
+ * backend change and a data migration, so the boundary is kept here in the service layer and the
+ * rest of the app speaks in dealers.
+ */
+export interface Dealer {
   seller_id: string;
+  /** Trading name of the dealer. */
   store_name: string;
   business_name?: string;
-  /** Primary contact person, not the store. */
+  /** Primary contact person, not the business. */
   name?: string;
   email?: string;
   phone_number?: string;
   tax_id?: string;
-  status?: SellerStatus;
+  status?: DealerStatus;
+  /** Percentage held over from the marketplace model — see the note in DealerFormModal. */
   commission_rate?: Numeric;
   created_at?: string;
   updated_at?: string;
@@ -48,6 +59,7 @@ export interface Product {
   stock_quantity?: Numeric;
   status?: ProductStatus;
   imageUrl?: string;
+  /** Which dealer this item is sourced from. Admin-only — never shown to shoppers. */
   seller_id?: string;
   created_at?: string;
   updated_at?: string;
@@ -99,7 +111,7 @@ export interface Order {
  * Payload shapes for writes. The server fills in the primary key when absent, so it stays
  * optional here — that is what distinguishes a create from an update.
  */
-export type SellerInput = Omit<Seller, 'seller_id' | 'created_at' | 'updated_at'> & {
+export type DealerInput = Omit<Dealer, 'seller_id' | 'created_at' | 'updated_at'> & {
   seller_id?: string;
 };
 

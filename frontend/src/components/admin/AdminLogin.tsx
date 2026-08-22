@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/auth-context';
 import { Button } from '../ui/Button';
 import { Field, TextInput } from '../ui/Field';
@@ -29,18 +28,15 @@ export function AdminLogin() {
 
   return (
     <div className="login">
+      {/* No "back to shop" link: this is a private console, not a page customers should ever
+          find their way in or out of. */}
       <div className="login-card">
-        <Link to="/" className="login-back">
-          <Icon name="arrow-left" size={15} />
-          Back to shop
-        </Link>
-
         <div className="login-brand">
           <span className="login-mark">
             <Icon name="sparkle" size={20} filled />
           </span>
-          <h1 className="login-title">Seller portal</h1>
-          <p className="login-sub">Sign in to manage the Two Souls marketplace.</p>
+          <h1 className="login-title">Two Souls Console</h1>
+          <p className="login-sub">Private business administration. Authorised access only.</p>
         </div>
 
         {error && (

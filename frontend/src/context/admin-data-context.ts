@@ -1,8 +1,8 @@
 import { createContext, useContext } from 'react';
-import type { Order, Product, Seller } from '../types';
+import type { Dealer, Order, Product } from '../types';
 
 export interface AdminDataContextValue {
-  sellers: Seller[];
+  dealers: Dealer[];
   products: Product[];
   orders: Order[];
   loading: boolean;

@@ -35,6 +35,17 @@
 
 .admin-brand-mark {
   color: var(--accent);
+  flex-shrink: 0;
+}
+
+.admin-brand-tag {
+  display: block;
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+  color: var(--ink-3);
+  line-height: 1.2;
 }
 
 .admin-nav {
@@ -652,6 +663,63 @@
   color: var(--ink-3);
 }
 
+/* Sourcing: line items grouped by the dealer they have to be ordered from. */
+.sourcing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.sourcing-group {
+  padding: var(--space-4);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.sourcing-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.sourcing-dealer {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.sourcing-contact {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--accent-strong);
+}
+
+.sourcing-contact:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.sourcing-warn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--warning);
+}
+
 .order-items {
   display: flex;
   flex-direction: column;
@@ -710,20 +778,6 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
-}
-
-.login-back {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--ink-3);
-  align-self: flex-start;
-}
-
-.login-back:hover {
-  color: var(--ink);
 }
 
 .login-brand {

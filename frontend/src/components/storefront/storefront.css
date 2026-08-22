@@ -416,78 +416,6 @@
   transform: translateX(3px);
 }
 
-/* ============================================================ Makers */
-
-.maker-rail {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(258px, 1fr);
-  gap: var(--space-4);
-  overflow-x: auto;
-  padding-bottom: var(--space-3);
-  scroll-snap-type: x proximity;
-}
-
-.maker-card {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-5);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  scroll-snap-align: start;
-  transition: border-color var(--dur-base) var(--ease-out);
-}
-
-.maker-card:hover {
-  border-color: var(--border-strong);
-}
-
-.maker-avatar {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 46px;
-  height: 46px;
-  font-family: var(--font-display);
-  font-size: var(--text-base);
-  font-weight: 600;
-  color: var(--accent-contrast);
-  background: linear-gradient(140deg, var(--accent) 0%, var(--accent-strong) 100%);
-  border-radius: var(--radius-md);
-}
-
-.maker-avatar-sm {
-  width: 38px;
-  height: 38px;
-  font-size: var(--text-sm);
-}
-
-.maker-body {
-  min-width: 0;
-  flex: 1;
-}
-
-.maker-name {
-  font-weight: 600;
-  color: var(--ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.maker-meta,
-.maker-count {
-  font-size: var(--text-sm);
-  color: var(--ink-3);
-}
-
-.maker-verified {
-  color: var(--success);
-  flex-shrink: 0;
-}
-
 /* ============================================================ Catalog toolbar */
 
 .catalog-toolbar {
@@ -809,11 +737,6 @@
   color: var(--accent-strong);
 }
 
-.product-seller {
-  font-size: var(--text-sm);
-  color: var(--ink-3);
-}
-
 .product-card-footer {
   display: flex;
   align-items: center;
@@ -917,27 +840,6 @@
   font-size: var(--text-2xl);
   font-weight: 700;
   color: var(--accent-strong);
-}
-
-.pdp-seller {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  width: 100%;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-}
-
-.pdp-seller-name {
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.pdp-seller-meta {
-  font-size: var(--text-sm);
-  color: var(--ink-3);
 }
 
 .pdp-description {

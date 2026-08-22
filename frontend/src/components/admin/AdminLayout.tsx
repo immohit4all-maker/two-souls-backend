@@ -10,7 +10,7 @@ const NAV: ReadonlyArray<{ to: string; label: string; icon: IconName; end?: bool
   { to: '/admin', label: 'Dashboard', icon: 'dashboard', end: true },
   { to: '/admin/orders', label: 'Orders', icon: 'receipt' },
   { to: '/admin/products', label: 'Products', icon: 'package' },
-  { to: '/admin/sellers', label: 'Sellers', icon: 'store' },
+  { to: '/admin/dealers', label: 'Dealers', icon: 'store' },
 ];
 
 export function AdminLayout() {
@@ -26,7 +26,10 @@ export function AdminLayout() {
       <aside className="admin-sidebar">
         <Link to="/admin" className="admin-brand">
           <Icon name="sparkle" size={17} filled className="admin-brand-mark" />
-          Two Souls
+          <span>
+            Two Souls
+            <span className="admin-brand-tag">Console</span>
+          </span>
         </Link>
 
         <nav className="admin-nav" aria-label="Admin sections">
@@ -43,14 +46,8 @@ export function AdminLayout() {
           ))}
         </nav>
 
-        {/* Pushed to the bottom by the nav's flex-grow — the previous portal used margin-top:auto
-            on a child of a non-growing container, so it never actually moved. */}
-        <div className="admin-sidebar-foot">
-          <Link to="/" className="admin-nav-link">
-            <Icon name="external" size={18} />
-            View store
-          </Link>
-        </div>
+        {/* No link out to the shop: this console is a private back-office and deliberately does
+            not advertise or navigate to the public storefront. */}
       </aside>
 
       <div className="admin-body">

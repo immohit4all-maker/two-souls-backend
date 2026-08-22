@@ -4,9 +4,9 @@ import { AdminDataProvider } from '../../context/AdminDataProvider';
 import { AdminLayout } from './AdminLayout';
 import { AdminLogin } from './AdminLogin';
 import { Dashboard } from './Dashboard';
+import { DealersManager } from './DealersManager';
 import { OrdersManager } from './OrdersManager';
 import { ProductsManager } from './ProductsManager';
-import { SellersManager } from './SellersManager';
 
 /**
  * Admin entry point: gate on the session, then mount the data provider once for the whole area.
@@ -33,7 +33,7 @@ export function AdminPortal() {
             <Route index element={<Dashboard />} />
             <Route path="orders" element={<OrdersManager />} />
             <Route path="products" element={<ProductsManager />} />
-            <Route path="sellers" element={<SellersManager />} />
+            <Route path="dealers" element={<DealersManager />} />
           </Route>
         </Routes>
       </AdminDataProvider>
