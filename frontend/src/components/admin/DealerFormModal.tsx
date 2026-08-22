@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Button } from '../ui/Button';
 import { Field, SelectInput, TextInput } from '../ui/Field';
 import { Modal } from '../ui/Modal';
-import { SELLER_STATUSES } from '../../types';
-import type { Seller, SellerInput, SellerStatus } from '../../types';
+import { DEALER_STATUSES } from '../../types';
+import type { Dealer, DealerInput, DealerStatus } from '../../types';
 
-interface SellerForm {
+interface DealerForm {
   store_name: string;
   business_name: string;
   name: string;
@@ -13,10 +13,10 @@ interface SellerForm {
   phone_number: string;
   tax_id: string;
   commission_rate: string;
-  status: SellerStatus;
+  status: DealerStatus;
 }
 
-const EMPTY: SellerForm = {
+const EMPTY: DealerForm = {
   store_name: '',
   business_name: '',
   name: '',
@@ -27,25 +27,25 @@ const EMPTY: SellerForm = {
   status: 'ACTIVE',
 };
 
-type Errors = Partial<Record<keyof SellerForm, string>>;
+type Errors = Partial<Record<keyof DealerForm, string>>;
 
-function toForm(seller: Seller): SellerForm {
+function toForm(dealer: Dealer): DealerForm {
   return {
-    store_name: seller.store_name ?? '',
-    business_name: seller.business_name ?? '',
-    name: seller.name ?? '',
-    email: seller.email ?? '',
-    phone_number: seller.phone_number ?? '',
-    tax_id: seller.tax_id ?? '',
-    commission_rate: seller.commission_rate === undefined ? '10' : String(seller.commission_rate),
-    status: seller.status ?? 'ACTIVE',
+    store_name: dealer.store_name ?? '',
+    business_name: dealer.business_name ?? '',
+    name: dealer.name ?? '',
+    email: dealer.email ?? '',
+    phone_number: dealer.phone_number ?? '',
+    tax_id: dealer.tax_id ?? '',
+    commission_rate: dealer.commission_rate === undefined ? '10' : String(dealer.commission_rate),
+    status: dealer.status ?? 'ACTIVE',
   };
 }
 
-function validate(form: SellerForm): Errors {
+function validate(form: DealerForm): Errors {
   const errors: Errors = {};
-  if (!form.store_name.trim()) errors.store_name = 'Store name is required.';
-  if (!form.business_name.trim()) errors.business_name = 'Business name is required.';
+  if (!form.store_name.trim()) errors.store_name = 'Dealer name is required.';
+  if (!form.business_name.trim()) errors.business_name = 'Registered business name is required.';
   if (!form.name.trim()) errors.name = 'Contact name is required.';
 
   if (!form.email.trim()) errors.email = 'Email is required.';
@@ -60,25 +60,25 @@ function validate(form: SellerForm): Errors {
   return errors;
 }
 
-export interface SellerFormModalProps {
-  initial: Seller | null;
+export interface DealerFormModalProps {
+  initial: Dealer | null;
   onClose: () => void;
-  /** Resolves on success; rejects to keep the dialog open so the operator can retry. */
-  onSave: (input: SellerInput) => Promise<void>;
+  /** Resolves on success; rejects to keep the dialog open so you can retry. */
+  onSave: (input: DealerInput) => Promise<void>;
 }
 
 /**
  * Mounted only while open, so the form state is seeded once from `initial` and thrown away on
  * close. The old modal kept itself mounted and reset via an effect keyed on `initialData`,
- * which meant opening "Add seller" twice in a row — where `initialData` stays null both times —
- * left the previous entry's values in the fields.
+ * which meant opening "Add" twice in a row — where `initialData` stays null both times — left
+ * the previous entry's values in the fields.
  */
-export function SellerFormModal({ initial, onClose, onSave }: SellerFormModalProps) {
-  const [form, setForm] = useState<SellerForm>(() => (initial ? toForm(initial) : EMPTY));
+export function DealerFormModal({ initial, onClose, onSave }: DealerFormModalProps) {
+  const [form, setForm] = useState<DealerForm>(() => (initial ? toForm(initial) : EMPTY));
   const [errors, setErrors] = useState<Errors>({});
   const [submitting, setSubmitting] = useState(false);
 
-  const update = (key: keyof SellerForm, value: string) => {
+  const update = (key: keyof DealerForm, value: string) => {
     setForm((current) => ({ ...current, [key]: value }));
     setErrors((current) => (current[key] ? { ...current, [key]: undefined } : current));
   };
@@ -116,8 +116,8 @@ export function SellerFormModal({ initial, onClose, onSave }: SellerFormModalPro
     <Modal
       open
       onClose={submitting ? () => undefined : onClose}
-      title={initial ? 'Edit seller' : 'Add a seller'}
-      description={initial ? initial.store_name : 'Register a new merchant partner.'}
+      title={initial ? 'Edit dealer' : 'Add a dealer'}
+      description={initial ? initial.store_name : 'Register a supplier you source stock from.'}
       onSubmit={handleSubmit}
       footer={
         <>
@@ -125,17 +125,17 @@ export function SellerFormModal({ initial, onClose, onSave }: SellerFormModalPro
             Cancel
           </Button>
           <Button type="submit" loading={submitting}>
-            {initial ? 'Save changes' : 'Add seller'}
+            {initial ? 'Save changes' : 'Add dealer'}
           </Button>
         </>
       }
     >
       <div className="form-grid">
-        <Field label="Store name" required error={errors.store_name}>
+        <Field label="Dealer name" required error={errors.store_name}>
           <TextInput value={form.store_name} onChange={(e) => update('store_name', e.target.value)} />
         </Field>
 
-        <Field label="Business name" required error={errors.business_name}>
+        <Field label="Registered business" required error={errors.business_name}>
           <TextInput
             value={form.business_name}
             onChange={(e) => update('business_name', e.target.value)}
@@ -162,7 +162,17 @@ export function SellerFormModal({ initial, onClose, onSave }: SellerFormModalPro
           <TextInput value={form.tax_id} onChange={(e) => update('tax_id', e.target.value)} />
         </Field>
 
-        <Field label="Commission rate (%)" required error={errors.commission_rate}>
+        {/*
+          Backed by the `commission_rate` field, which came from the earlier marketplace model.
+          Labelled neutrally rather than repurposed, because existing records may hold a value
+          that meant something different. Rename once the dealer terms are settled.
+        */}
+        <Field
+          label="Agreed rate (%)"
+          required
+          error={errors.commission_rate}
+          hint="Your commercial rate with this dealer"
+        >
           <TextInput
             type="number"
             step="0.1"
@@ -174,11 +184,8 @@ export function SellerFormModal({ initial, onClose, onSave }: SellerFormModalPro
         </Field>
 
         <Field label="Status" error={errors.status}>
-          <SelectInput
-            value={form.status}
-            onChange={(e) => update('status', e.target.value)}
-          >
-            {SELLER_STATUSES.map((status) => (
+          <SelectInput value={form.status} onChange={(e) => update('status', e.target.value)}>
+            {DEALER_STATUSES.map((status) => (
               <option key={status} value={status}>
                 {status}
               </option>

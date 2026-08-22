@@ -15,7 +15,7 @@ import { ProductFormModal } from './ProductFormModal';
 import type { Product, ProductInput } from '../../types';
 
 export function ProductsManager() {
-  const { products, sellers, loading, error, refresh } = useAdminData();
+  const { products, dealers, loading, error, refresh } = useAdminData();
   const toast = useToast();
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -23,8 +23,8 @@ export function ProductsManager() {
   const [pendingDelete, setPendingDelete] = useState<Product[]>([]);
   const [deleting, setDeleting] = useState(false);
 
-  const sellerName = (id?: string) =>
-    id ? (sellers.find((seller) => seller.seller_id === id)?.store_name ?? 'Unknown') : 'Unassigned';
+  const dealerName = (id?: string) =>
+    id ? (dealers.find((dealer) => dealer.seller_id === id)?.store_name ?? 'Unknown') : 'Unassigned';
 
   const handleSave = async (input: ProductInput) => {
     try {
@@ -85,10 +85,10 @@ export function ProductsManager() {
       render: (product) => product.category || '—',
     },
     {
-      key: 'seller',
-      header: 'Seller',
-      sortValue: (product) => sellerName(product.seller_id),
-      render: (product) => <span className="cell-sub">{sellerName(product.seller_id)}</span>,
+      key: 'dealer',
+      header: 'Sourced from',
+      sortValue: (product) => dealerName(product.seller_id),
+      render: (product) => <span className="cell-sub">{dealerName(product.seller_id)}</span>,
     },
     {
       key: 'margin',
@@ -164,7 +164,7 @@ export function ProductsManager() {
       <header className="page-head">
         <div>
           <h1 className="page-title">Products</h1>
-          <p className="page-sub">Inventory, pricing and listing status.</p>
+          <p className="page-sub">What you sell, what it costs you, and which dealer supplies it.</p>
         </div>
         <Button
           iconLeft="plus"
@@ -186,11 +186,11 @@ export function ProductsManager() {
           error={error}
           onRetry={() => void refresh()}
           searchText={(product) =>
-            [product.title, product.sku, product.category, sellerName(product.seller_id)]
+            [product.title, product.sku, product.category, dealerName(product.seller_id)]
               .filter(Boolean)
               .join(' ')
           }
-          searchPlaceholder="Search by title, SKU, category…"
+          searchPlaceholder="Search by title, SKU, category, dealer…"
           emptyTitle="No products yet"
           emptyDescription="Add your first listing to open the shop."
           emptyAction={
@@ -223,7 +223,7 @@ export function ProductsManager() {
         <ProductFormModal
           key={editing?.product_id ?? 'new'}
           initial={editing}
-          sellers={sellers}
+          dealers={dealers}
           onClose={() => {
             setModalOpen(false);
             setEditing(null);

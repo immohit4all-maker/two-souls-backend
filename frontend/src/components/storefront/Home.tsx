@@ -11,7 +11,6 @@ import { CatalogToolbar } from './CatalogToolbar';
 import type { CatalogFilters } from './CatalogToolbar';
 import { ProductCard } from './ProductCard';
 import { ProductImage } from './ProductImage';
-import { SellerRail } from './SellerRail';
 
 const DEFAULT_FILTERS: CatalogFilters = {
   query: '',
@@ -22,8 +21,8 @@ const DEFAULT_FILTERS: CatalogFilters = {
 };
 
 const PROMISES = [
-  { icon: 'sparkle', title: 'Made in small batches', copy: 'No mass production. Every piece is finished by hand.' },
-  { icon: 'store', title: 'Straight from the maker', copy: 'You buy from the studio, not a middleman warehouse.' },
+  { icon: 'sparkle', title: 'Chosen by hand', copy: 'Every piece is picked for the collection, never bulk-listed.' },
+  { icon: 'package', title: 'Small-batch quality', copy: 'Short runs and careful making, not mass production.' },
   { icon: 'truck', title: 'Packed to be gifted', copy: 'Arrives wrapped and ready to hand over.' },
   { icon: 'lock', title: 'Secure checkout', copy: 'Your details stay private from start to finish.' },
 ] as const;
@@ -33,7 +32,7 @@ function scrollToCatalog() {
 }
 
 export function Home() {
-  const { products, sellers, loading, error, reload } = useCatalog();
+  const { products, loading, error, reload } = useCatalog();
   const savedIds = useSavedIds();
   const [filters, setFilters] = useState<CatalogFilters>(DEFAULT_FILTERS);
 
@@ -45,12 +44,6 @@ export function Home() {
     return ['ALL', ...Array.from(unique).sort((a, b) => a.localeCompare(b))];
   }, [products]);
 
-  const sellerNames = useMemo(() => {
-    const names = new Map<string, string>();
-    sellers.forEach((seller) => names.set(seller.seller_id, seller.store_name));
-    return names;
-  }, [sellers]);
-
   const visible = useMemo(() => {
     const needle = filters.query.trim().toLowerCase();
     const bucket = bucketById(filters.priceBucket);
@@ -61,13 +54,9 @@ export function Home() {
       if (!matchesBucket(product, bucket)) return false;
       if (!needle) return true;
 
-      const haystack = [
-        product.title,
-        product.category,
-        product.description,
-        product.sku,
-        product.seller_id ? sellerNames.get(product.seller_id) : undefined,
-      ]
+      // Deliberately excludes the sourcing dealer — that is private supply-side information
+      // and must not be discoverable through the shop's search box.
+      const haystack = [product.title, product.category, product.description, product.sku]
         .filter(Boolean)
         .join(' ')
         .toLowerCase();
@@ -76,10 +65,10 @@ export function Home() {
     });
 
     return sortProducts(filtered, filters.sort);
-  }, [products, filters, savedIds, sellerNames]);
+  }, [products, filters, savedIds]);
 
   const heroImages = products.filter((product) => product.imageUrl).slice(0, 3);
-  const makerCount = sellers.filter((seller) => (seller.status ?? 'ACTIVE') === 'ACTIVE').length;
+  const categoryCount = Math.max(0, categories.length - 1);
 
   return (
     <>
@@ -87,7 +76,7 @@ export function Home() {
         <div className="hero-copy">
           <p className="eyebrow hero-eyebrow">
             <Icon name="sparkle" size={14} filled />
-            Handpicked from independent studios
+            The Two Souls collection
           </p>
 
           <h1 className="hero-title">
@@ -95,8 +84,8 @@ export function Home() {
           </h1>
 
           <p className="hero-subtitle">
-            Every piece on Two Souls is made in small batches by an independent artisan — so the
-            thing you give has a maker, a place, and a reason behind it.
+            We hunt down beautiful, small-batch pieces so you don't have to — every one chosen by
+            hand, so the thing you give feels considered rather than picked off a shelf.
           </p>
 
           <div className="hero-actions">
@@ -106,20 +95,20 @@ export function Home() {
             <Button
               size="lg"
               variant="secondary"
-              onClick={() => document.getElementById('makers-heading')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => document.getElementById('budget-heading')?.scrollIntoView({ behavior: 'smooth' })}
             >
-              Meet the makers
+              Shop by budget
             </Button>
           </div>
 
           <dl className="hero-stats">
             <div>
-              <dt>Makers</dt>
-              <dd>{loading ? '—' : makerCount}</dd>
-            </div>
-            <div>
               <dt>Pieces</dt>
               <dd>{loading ? '—' : products.length}</dd>
+            </div>
+            <div>
+              <dt>Collections</dt>
+              <dd>{loading ? '—' : categoryCount}</dd>
             </div>
             <div>
               <dt>Shipping</dt>
@@ -210,8 +199,6 @@ export function Home() {
         </div>
       </section>
 
-      {!loading && <SellerRail sellers={sellers} products={products} />}
-
       <section className="catalog" id="catalog" aria-labelledby="catalog-heading">
         <div className="section-head">
           <div>
@@ -245,7 +232,7 @@ export function Home() {
         ) : error ? (
           <EmptyState
             tone="error"
-            title="We couldn't load the catalogue"
+            title="We couldn't load the collection"
             description={error}
             action={
               <Button variant="secondary" iconLeft="refresh" onClick={() => void reload()}>
@@ -271,12 +258,7 @@ export function Home() {
         ) : (
           <div className="product-grid">
             {visible.map((product, index) => (
-              <ProductCard
-                key={product.product_id}
-                product={product}
-                sellerName={product.seller_id ? sellerNames.get(product.seller_id) : undefined}
-                eagerImage={index < 4}
-              />
+              <ProductCard key={product.product_id} product={product} eagerImage={index < 4} />
             ))}
           </div>
         )}

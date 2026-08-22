@@ -7,7 +7,7 @@ import {
   dailyRevenue,
   lowStockProducts,
   recentOrders,
-  revenueBySeller,
+  revenueByDealer,
   revenueDeltaPercent,
   statusBreakdown,
   totalRevenue,
@@ -59,7 +59,7 @@ function StatCard({ label, value, footnote, icon }: StatCardProps) {
 }
 
 export function Dashboard() {
-  const { sellers, products, orders, loading, error, refresh } = useAdminData();
+  const { dealers, products, orders, loading, error, refresh } = useAdminData();
 
   if (loading) {
     return (
@@ -90,7 +90,7 @@ export function Dashboard() {
   }
 
   const revenue = totalRevenue(orders);
-  const activeSellers = sellers.filter((seller) => (seller.status ?? 'ACTIVE') === 'ACTIVE').length;
+  const activeDealers = dealers.filter((dealer) => (dealer.status ?? 'ACTIVE') === 'ACTIVE').length;
   const publishedProducts = products.filter(
     (product) => (product.status ?? 'PUBLISHED') === 'PUBLISHED',
   ).length;
@@ -115,13 +115,13 @@ export function Dashboard() {
           icon="receipt"
         />
         <StatCard
-          label="Active sellers"
-          value={activeSellers.toLocaleString()}
+          label="Active dealers"
+          value={activeDealers.toLocaleString()}
           footnote={
             <span className="stat-note">
-              {sellers.length - activeSellers > 0
-                ? `${sellers.length - activeSellers} inactive`
-                : 'All partners active'}
+              {dealers.length - activeDealers > 0
+                ? `${dealers.length - activeDealers} inactive`
+                : 'All dealers active'}
             </span>
           }
           icon="store"
@@ -161,18 +161,22 @@ export function Dashboard() {
           <DonutChart slices={statusBreakdown(orders)} label="Orders by status" />
         </section>
 
-        <section className="panel" aria-labelledby="sellers-heading">
+        <section className="panel" aria-labelledby="dealers-heading">
           <header className="panel-head">
             <div>
-              <h2 className="panel-title" id="sellers-heading">
-                Top sellers
+              <h2 className="panel-title" id="dealers-heading">
+                Revenue by dealer
               </h2>
-              <p className="panel-sub">By attributed line-item revenue.</p>
+              <p className="panel-sub">Which suppliers' stock is actually selling.</p>
             </div>
+            <Link to="/admin/dealers" className="panel-link">
+              Manage
+              <Icon name="arrow-right" size={14} />
+            </Link>
           </header>
           <BarList
-            items={revenueBySeller(orders, sellers)}
-            emptyMessage="No seller revenue recorded yet."
+            items={revenueByDealer(orders, dealers)}
+            emptyMessage="No dealer revenue recorded yet."
           />
         </section>
 

@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useCatalog } from '../../context/catalog-context';
 import { useCart } from '../../context/cart-context';
 import { useToast } from '../ui/toast-context';
-import { formatCurrency, initials } from '../../lib/format';
+import { formatCurrency } from '../../lib/format';
 import { isLowStock, isSoldOut, stockOf } from '../../lib/product';
 import { toggleSaved, useSavedIds } from '../../lib/savedItems';
 import { Badge } from '../ui/Badge';
@@ -17,7 +17,7 @@ import { QuantityStepper } from './QuantityStepper';
 
 export function ProductDetail() {
   const { productId } = useParams<{ productId: string }>();
-  const { products, sellers, loading, error, reload } = useCatalog();
+  const { products, loading, error, reload } = useCatalog();
   const { addItem, openCart } = useCart();
   const toast = useToast();
   const savedIds = useSavedIds();
@@ -66,7 +66,7 @@ export function ProductDetail() {
       <EmptyState
         icon="package"
         title="This gift is no longer available"
-        description="It may have sold out or been taken down by the maker."
+        description="It may have sold out, or we may have retired it from the collection."
         action={
           <Link to="/" className="btn btn-primary btn-md">
             Back to the shop
@@ -76,7 +76,6 @@ export function ProductDetail() {
     );
   }
 
-  const seller = sellers.find((candidate) => candidate.seller_id === product.seller_id);
   const soldOut = isSoldOut(product);
   const stock = stockOf(product);
   const saved = savedIds.includes(product.product_id);
@@ -114,18 +113,6 @@ export function ProductDetail() {
           <h1 className="pdp-title">{product.title}</h1>
 
           <p className="pdp-price">{formatCurrency(product.sell_price)}</p>
-
-          {seller && (
-            <div className="pdp-seller">
-              <span className="maker-avatar maker-avatar-sm" aria-hidden="true">
-                {initials(seller.store_name)}
-              </span>
-              <div>
-                <p className="pdp-seller-name">{seller.store_name}</p>
-                <p className="pdp-seller-meta">{seller.business_name || 'Independent creator'}</p>
-              </div>
-            </div>
-          )}
 
           {product.description && <p className="pdp-description">{product.description}</p>}
 
@@ -173,7 +160,7 @@ export function ProductDetail() {
 
           <ul className="pdp-reassure">
             <li>
-              <Icon name="truck" size={16} /> Packed and posted by the maker
+              <Icon name="truck" size={16} /> Carefully packed and posted by us
             </li>
             <li>
               <Icon name="lock" size={16} /> Secure checkout
@@ -194,13 +181,7 @@ export function ProductDetail() {
           </div>
           <div className="product-grid">
             {related.map((candidate) => (
-              <ProductCard
-                key={candidate.product_id}
-                product={candidate}
-                sellerName={
-                  sellers.find((entry) => entry.seller_id === candidate.seller_id)?.store_name
-                }
-              />
+              <ProductCard key={candidate.product_id} product={candidate} />
             ))}
           </div>
         </section>

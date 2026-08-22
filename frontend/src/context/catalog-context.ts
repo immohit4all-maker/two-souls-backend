@@ -1,10 +1,9 @@
 import { createContext, useContext } from 'react';
-import type { Product, Seller } from '../types';
+import type { Product } from '../types';
 
 export interface CatalogContextValue {
   /** Products a shopper may see — drafts and archived listings are filtered out. */
   products: Product[];
-  sellers: Seller[];
   loading: boolean;
   error: string | null;
   reload: () => Promise<void>;

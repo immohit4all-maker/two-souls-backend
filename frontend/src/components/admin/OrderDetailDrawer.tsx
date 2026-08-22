@@ -1,23 +1,51 @@
+import { useAdminData } from '../../context/admin-data-context';
 import { formatCurrency, formatDateTime, toNumber } from '../../lib/format';
 import { Badge, StatusBadge } from '../ui/Badge';
 import { Drawer } from '../ui/Drawer';
+import { Icon } from '../ui/Icon';
 import { ProductImage } from '../storefront/ProductImage';
-import type { Order } from '../../types';
+import type { Dealer, Order, OrderItem } from '../../types';
 
 export interface OrderDetailDrawerProps {
   order: Order | null;
   onClose: () => void;
 }
 
+interface SourcingGroup {
+  dealer: Dealer | null;
+  items: OrderItem[];
+}
+
 /**
- * Full order record: line items, totals and the shipping address.
+ * Full order record: line items, totals, shipping address and — the part that drives the actual
+ * workflow — which dealer each item has to be ordered from.
  *
  * The old orders table showed only a customer name and a total, so there was no way to see what
- * anyone had actually bought without going to the database.
+ * anyone had bought, let alone who to buy it from.
  */
 export function OrderDetailDrawer({ order, onClose }: OrderDetailDrawerProps) {
+  const { dealers, products } = useAdminData();
+
   const currency = order?.currency ?? 'USD';
   const items = order?.items ?? [];
+
+  /**
+   * Resolve each line to a dealer and group.
+   *
+   * The line item carries its own `seller_id` snapshot, but fall back to the product record for
+   * older orders written before that was captured.
+   */
+  const groups: SourcingGroup[] = [];
+  for (const item of items) {
+    const dealerId =
+      item.seller_id ??
+      products.find((product) => product.product_id === item.product_id)?.seller_id;
+    const dealer = dealerId ? (dealers.find((d) => d.seller_id === dealerId) ?? null) : null;
+
+    const existing = groups.find((group) => group.dealer?.seller_id === dealer?.seller_id);
+    if (existing) existing.items.push(item);
+    else groups.push({ dealer, items: [item] });
+  }
 
   return (
     <Drawer
@@ -25,7 +53,7 @@ export function OrderDetailDrawer({ order, onClose }: OrderDetailDrawerProps) {
       onClose={onClose}
       title={order?.order_number ?? 'Order'}
       description={order ? formatDateTime(order.placed_at ?? order.created_at) : undefined}
-      width="480px"
+      width="520px"
     >
       {order && (
         <div className="order-detail">
@@ -51,7 +79,7 @@ export function OrderDetailDrawer({ order, onClose }: OrderDetailDrawerProps) {
 
           {order.shipping_address && (
             <section>
-              <p className="eyebrow">Shipping to</p>
+              <p className="eyebrow">Deliver to</p>
               <address className="order-address">
                 {order.shipping_address.line1}
                 {order.shipping_address.line2 && (
@@ -73,31 +101,55 @@ export function OrderDetailDrawer({ order, onClose }: OrderDetailDrawerProps) {
 
           <section>
             <p className="eyebrow">
-              Items {items.length > 0 && <span className="order-count">({items.length})</span>}
+              Source from {items.length > 0 && <span className="order-count">({items.length} items)</span>}
             </p>
 
             {items.length === 0 ? (
               <p className="cell-sub">No line items were recorded on this order.</p>
             ) : (
-              <ul className="order-items">
-                {items.map((item) => (
-                  <li key={`${item.product_id}-${item.sku ?? ''}`} className="order-item">
-                    <span className="order-item-media">
-                      <ProductImage src={item.imageUrl} alt="" />
-                    </span>
-                    <div className="order-item-body">
-                      <p className="cell-title">{item.title}</p>
-                      <p className="cell-sub">
-                        {toNumber(item.quantity)} × {formatCurrency(item.unit_price, currency)}
-                        {item.sku && <span className="text-mono"> · {item.sku}</span>}
-                      </p>
+              <div className="sourcing">
+                {groups.map((group) => (
+                  <div key={group.dealer?.seller_id ?? 'unassigned'} className="sourcing-group">
+                    <div className="sourcing-head">
+                      <span className="sourcing-dealer">
+                        <Icon name="store" size={15} />
+                        {group.dealer?.store_name ?? 'No dealer assigned'}
+                      </span>
+                      {group.dealer?.email ? (
+                        <a className="sourcing-contact" href={`mailto:${group.dealer.email}`}>
+                          <Icon name="mail" size={14} />
+                          {group.dealer.email}
+                        </a>
+                      ) : (
+                        <span className="sourcing-warn">
+                          <Icon name="alert" size={14} />
+                          Assign a dealer
+                        </span>
+                      )}
                     </div>
-                    <span className="order-item-total">
-                      {formatCurrency(item.line_total, currency)}
-                    </span>
-                  </li>
+
+                    <ul className="order-items">
+                      {group.items.map((item) => (
+                        <li key={`${item.product_id}-${item.sku ?? ''}`} className="order-item">
+                          <span className="order-item-media">
+                            <ProductImage src={item.imageUrl} alt="" />
+                          </span>
+                          <div className="order-item-body">
+                            <p className="cell-title">{item.title}</p>
+                            <p className="cell-sub">
+                              {toNumber(item.quantity)} × {formatCurrency(item.unit_price, currency)}
+                              {item.sku && <span className="text-mono"> · {item.sku}</span>}
+                            </p>
+                          </div>
+                          <span className="order-item-total">
+                            {formatCurrency(item.line_total, currency)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 ))}
-              </ul>
+              </div>
             )}
           </section>
 
@@ -113,7 +165,7 @@ export function OrderDetailDrawer({ order, onClose }: OrderDetailDrawerProps) {
               </dd>
             </div>
             <div className="summary-grand">
-              <dt>Total</dt>
+              <dt>Customer pays</dt>
               <dd>{formatCurrency(order.total_amount, currency)}</dd>
             </div>
           </dl>

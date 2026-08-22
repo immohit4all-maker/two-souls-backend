@@ -49,7 +49,7 @@ export function CatalogToolbar({
           <input
             type="search"
             className="input catalog-search-input"
-            placeholder="Search gifts, makers, materials…"
+            placeholder="Search gifts, materials, occasions…"
             value={filters.query}
             onChange={(event) => onChange({ query: event.target.value })}
             aria-label="Search the catalogue"

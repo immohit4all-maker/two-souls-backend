@@ -5,6 +5,10 @@ import { useSavedIds } from '../../lib/savedItems';
 import { Icon } from '../ui/Icon';
 import { CartDrawer } from './CartDrawer';
 
+/**
+ * The public shop. It deliberately contains no link into the admin portal — that is a private
+ * back-office reachable only by navigating to /admin directly.
+ */
 export function StorefrontLayout() {
   const { count, openCart } = useCart();
   const savedIds = useSavedIds();
@@ -30,11 +34,15 @@ export function StorefrontLayout() {
           </Link>
 
           <nav className="store-nav" aria-label="Main">
-            <NavLink to="/" end className={({ isActive }) => (isActive ? 'store-nav-link active' : 'store-nav-link')}>
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) => (isActive ? 'store-nav-link active' : 'store-nav-link')}
+            >
               Shop
             </NavLink>
-            <a className="store-nav-link" href="/#makers-heading">
-              Makers
+            <a className="store-nav-link" href="/#budget-heading">
+              By budget
             </a>
           </nav>
 
@@ -73,13 +81,15 @@ export function StorefrontLayout() {
               <Icon name="sparkle" size={16} filled className="wordmark-mark" />
               Two Souls
             </span>
-            <p>Thoughtfully made gifts from independent studios around the world.</p>
+            <p>
+              A hand-picked collection of small-batch gifts, chosen for the people who are hard to
+              buy for.
+            </p>
           </div>
 
           <nav className="store-footer-links" aria-label="Footer">
             <Link to="/">Shop all</Link>
-            <a href="/#makers-heading">Makers</a>
-            <Link to="/admin">Seller portal</Link>
+            <a href="/#budget-heading">By budget</a>
           </nav>
         </div>
 

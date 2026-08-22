@@ -1,7 +1,7 @@
 export type BadgeTone = 'success' | 'warning' | 'danger' | 'info' | 'neutral' | 'accent';
 
 /**
- * Single source of truth for status colour across sellers, products, orders and payments.
+ * Single source of truth for status colour across dealers, products, orders and payments.
  * Previously this was three near-identical CSS rule groups that had already drifted apart
  * (`.status-pill.processing` was styled as a warning in one place and not defined in another).
  */

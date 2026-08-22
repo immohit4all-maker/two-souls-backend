@@ -3,18 +3,18 @@ import type { ReactNode } from 'react';
 import { AdminDataContext } from './admin-data-context';
 import type { AdminDataContextValue } from './admin-data-context';
 import { useAsync } from '../lib/useAsync';
+import { getDealers } from '../services/dealerService';
 import { getOrders } from '../services/orderService';
 import { getProducts } from '../services/productService';
-import { getSellers } from '../services/sellerService';
-import type { Order, Product, Seller } from '../types';
+import type { Dealer, Order, Product } from '../types';
 
 interface AdminData {
-  sellers: Seller[];
+  dealers: Dealer[];
   products: Product[];
   orders: Order[];
 }
 
-const EMPTY: AdminData = { sellers: [], products: [], orders: [] };
+const EMPTY: AdminData = { dealers: [], products: [], orders: [] };
 
 /**
  * Loads all three collections once for the whole admin area.
@@ -25,13 +25,13 @@ const EMPTY: AdminData = { sellers: [], products: [], orders: [] };
  */
 export function AdminDataProvider({ children }: { children: ReactNode }) {
   const { data, loading, error, reload } = useAsync<AdminData>(async () => {
-    const [sellers, products, orders] = await Promise.all([getSellers(), getProducts(), getOrders()]);
-    return { sellers, products, orders };
+    const [dealers, products, orders] = await Promise.all([getDealers(), getProducts(), getOrders()]);
+    return { dealers, products, orders };
   }, EMPTY);
 
   const value = useMemo<AdminDataContextValue>(
     () => ({
-      sellers: data.sellers,
+      dealers: data.dealers,
       products: data.products,
       orders: data.orders,
       loading,

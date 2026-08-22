@@ -25,8 +25,8 @@ export function OrderConfirmation() {
 
       <h1 className="confirmation-title">Thank you — your order is in.</h1>
       <p className="confirmation-lead">
-        We've sent the details to the maker. You'll hear from them by email to confirm and arrange
-        payment.
+        We've got your order and we're on it. You'll get an email from us shortly to confirm the
+        details and arrange payment.
       </p>
 
       <p className="confirmation-reference">

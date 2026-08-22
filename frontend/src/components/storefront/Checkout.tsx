@@ -280,7 +280,7 @@ export function Checkout() {
             </Button>
             <p className="checkout-note">
               <Icon name="lock" size={14} />
-              No payment is taken yet — the maker will confirm your order by email.
+              No payment is taken yet — we'll email you to confirm your order.
             </p>
           </div>
         </form>
