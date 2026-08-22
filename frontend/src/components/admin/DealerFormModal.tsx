@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { dealerLabel } from '../../lib/dealer';
 import { Button } from '../ui/Button';
 import { Field, SelectInput, TextInput } from '../ui/Field';
 import { Modal } from '../ui/Modal';
@@ -39,15 +40,17 @@ function toForm(dealer: Dealer): DealerForm {
   };
 }
 
-/** Only the dealer name and a contact are mandatory; status always has a default. */
+/**
+ * Nothing is mandatory — a dealer can be saved with as little or as much as you have to hand.
+ *
+ * The one check left is the shape of an email you did type, since a malformed address silently
+ * breaks the mailto link in an order's sourcing list. Leaving it blank is still fine.
+ */
 function validate(form: DealerForm): Errors {
   const errors: Errors = {};
-  if (!form.store_name.trim()) errors.store_name = 'Dealer name is required.';
-  if (!form.name.trim()) errors.name = 'Contact name is required.';
 
-  // Optional, but must be well-formed when supplied.
   if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(form.email.trim())) {
-    errors.email = 'Enter a valid email address.';
+    errors.email = 'Enter a valid email address, or leave it blank.';
   }
 
   return errors;
@@ -90,8 +93,10 @@ export function DealerFormModal({ initial, onClose, onSave }: DealerFormModalPro
         // any stored field this form does not render — such as the retired commission_rate —
         // from being silently wiped on the next edit.
         ...(initial ?? {}),
-        store_name: form.store_name.trim(),
-        name: form.name.trim(),
+        // Blank fields are omitted rather than stored as empty strings, so a record only ever
+        // holds what was actually filled in.
+        store_name: form.store_name.trim() || undefined,
+        name: form.name.trim() || undefined,
         status: form.status,
         email: form.email.trim() || undefined,
         phone_number: form.phone_number.trim() || undefined,
@@ -110,7 +115,9 @@ export function DealerFormModal({ initial, onClose, onSave }: DealerFormModalPro
       open
       onClose={submitting ? () => undefined : onClose}
       title={initial ? 'Edit dealer' : 'Add a dealer'}
-      description={initial ? initial.store_name : 'Register a supplier you source stock from.'}
+      description={
+        initial ? dealerLabel(initial) : 'Register a supplier you source stock from. Nothing is required.'
+      }
       onSubmit={handleSubmit}
       footer={
         <>
@@ -124,7 +131,12 @@ export function DealerFormModal({ initial, onClose, onSave }: DealerFormModalPro
       }
     >
       <div className="form-grid">
-        <Field label="Dealer name" required error={errors.store_name} className="field-full">
+        <Field
+          label="Dealer name"
+          error={errors.store_name}
+          hint="How they'll appear everywhere else. Falls back to the business or contact name."
+          className="field-full"
+        >
           <TextInput
             value={form.store_name}
             onChange={(e) => update('store_name', e.target.value)}
@@ -132,7 +144,7 @@ export function DealerFormModal({ initial, onClose, onSave }: DealerFormModalPro
           />
         </Field>
 
-        <Field label="Contact name" required error={errors.name}>
+        <Field label="Contact name" error={errors.name}>
           <TextInput value={form.name} onChange={(e) => update('name', e.target.value)} />
         </Field>
 
@@ -145,10 +157,6 @@ export function DealerFormModal({ initial, onClose, onSave }: DealerFormModalPro
             ))}
           </SelectInput>
         </Field>
-
-        <p className="form-divider field-full">
-          <span>Optional details</span>
-        </p>
 
         <Field
           label="Email"

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { errorMessage } from '../../lib/apiClient';
+import { dealerLabel } from '../../lib/dealer';
 import { uploadProductImage } from '../../services/productService';
 import { Button } from '../ui/Button';
 import { Field, SelectInput, TextArea, TextInput } from '../ui/Field';
@@ -237,7 +238,7 @@ export function ProductFormModal({ initial, dealers, onClose, onSave }: ProductF
             <option value="">Unassigned</option>
             {dealers.map((dealer) => (
               <option key={dealer.seller_id} value={dealer.seller_id}>
-                {dealer.store_name}
+                {dealerLabel(dealer)}
               </option>
             ))}
           </SelectInput>

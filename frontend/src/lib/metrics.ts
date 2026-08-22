@@ -1,3 +1,4 @@
+import { dealerLabel } from './dealer';
 import { timestampOf, toNumber } from './format';
 import { stockOf } from './product';
 import type { Dealer, Order, Product } from '../types';
@@ -126,7 +127,7 @@ export interface NamedValue {
  * add up to something that reconciles against total revenue.
  */
 export function revenueByDealer(orders: Order[], dealers: Dealer[], limit = 5): NamedValue[] {
-  const names = new Map(dealers.map((dealer) => [dealer.seller_id, dealer.store_name]));
+  const names = new Map(dealers.map((dealer) => [dealer.seller_id, dealerLabel(dealer)]));
   const totals = new Map<string, number>();
 
   for (const order of orders) {

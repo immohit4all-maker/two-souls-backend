@@ -545,6 +545,13 @@
   color: var(--ink);
 }
 
+/* A record saved without a name falls back to a placeholder; mark it as not-real text. */
+.cell-untitled {
+  font-style: italic;
+  font-weight: 500;
+  color: var(--ink-3);
+}
+
 .cell-sub {
   font-size: var(--text-sm);
   color: var(--ink-3);

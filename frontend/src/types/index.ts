@@ -31,8 +31,11 @@ export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
  */
 export interface Dealer {
   seller_id: string;
-  /** Trading name of the dealer. */
-  store_name: string;
+  /**
+   * Trading name. Optional like every other field — use `dealerLabel()` from lib/dealer to
+   * render one rather than reading this directly, so partly-filled records still show something.
+   */
+  store_name?: string;
   business_name?: string;
   /** Primary contact person, not the business. */
   name?: string;
