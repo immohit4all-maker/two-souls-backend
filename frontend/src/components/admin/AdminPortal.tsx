@@ -20,28 +20,33 @@ const AddSellerModal = ({ isOpen, onClose, onAdd, initialData }: any) => {
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <h3>{initialData ? 'Edit Seller' : 'Add New Seller'}</h3>
-        <form onSubmit={(e) => { e.preventDefault(); onAdd(seller); }}>
-          <div className="form-group"><label>Store Name</label><input className="form-input" value={seller.store_name} onChange={e => setSeller({...seller, store_name: e.target.value})} required /></div>
-          <div className="form-group"><label>Business Name</label><input className="form-input" value={seller.business_name} onChange={e => setSeller({...seller, business_name: e.target.value})} required /></div>
-          <div className="form-group"><label>Contact Name</label><input className="form-input" value={seller.name} onChange={e => setSeller({...seller, name: e.target.value})} required /></div>
-          <div className="form-group"><label>Email</label><input className="form-input" type="email" value={seller.email} onChange={e => setSeller({...seller, email: e.target.value})} required /></div>
-          <div className="form-group"><label>Phone Number</label><input className="form-input" value={seller.phone_number || ''} onChange={e => setSeller({...seller, phone_number: e.target.value})} /></div>
-          <div className="form-group"><label>Tax ID / GSTIN</label><input className="form-input" value={seller.tax_id || ''} onChange={e => setSeller({...seller, tax_id: e.target.value})} /></div>
-          <div className="form-group"><label>Commission Rate (%)</label><input className="form-input" type="number" step="0.1" value={seller.commission_rate || 10} onChange={e => setSeller({...seller, commission_rate: parseFloat(e.target.value)})} /></div>
-          <div className="form-group">
-            <label>Status</label>
-            <select className="form-input" value={seller.status || 'ACTIVE'} onChange={e => setSeller({...seller, status: e.target.value})}>
-              <option value="ACTIVE">ACTIVE</option>
-              <option value="PENDING">PENDING</option>
-              <option value="SUSPENDED">SUSPENDED</option>
-              <option value="INACTIVE">INACTIVE</option>
-            </select>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>{initialData ? 'Edit Seller' : 'Add New Seller'}</h3>
+          <button type="button" className="modal-close-btn" onClick={onClose}>✕</button>
+        </div>
+        <form onSubmit={(e) => { e.preventDefault(); onAdd(seller); }} className="modal-form">
+          <div className="modal-body">
+            <div className="form-group"><label>Store Name</label><input className="form-input" value={seller.store_name} onChange={e => setSeller({...seller, store_name: e.target.value})} required /></div>
+            <div className="form-group"><label>Business Name</label><input className="form-input" value={seller.business_name} onChange={e => setSeller({...seller, business_name: e.target.value})} required /></div>
+            <div className="form-group"><label>Contact Name</label><input className="form-input" value={seller.name} onChange={e => setSeller({...seller, name: e.target.value})} required /></div>
+            <div className="form-group"><label>Email</label><input className="form-input" type="email" value={seller.email} onChange={e => setSeller({...seller, email: e.target.value})} required /></div>
+            <div className="form-group"><label>Phone Number</label><input className="form-input" value={seller.phone_number || ''} onChange={e => setSeller({...seller, phone_number: e.target.value})} /></div>
+            <div className="form-group"><label>Tax ID / GSTIN</label><input className="form-input" value={seller.tax_id || ''} onChange={e => setSeller({...seller, tax_id: e.target.value})} /></div>
+            <div className="form-group"><label>Commission Rate (%)</label><input className="form-input" type="number" step="0.1" value={seller.commission_rate || 10} onChange={e => setSeller({...seller, commission_rate: parseFloat(e.target.value)})} /></div>
+            <div className="form-group">
+              <label>Status</label>
+              <select className="form-input" value={seller.status || 'ACTIVE'} onChange={e => setSeller({...seller, status: e.target.value})}>
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="PENDING">PENDING</option>
+                <option value="SUSPENDED">SUSPENDED</option>
+                <option value="INACTIVE">INACTIVE</option>
+              </select>
+            </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem' }}>
-            <button type="button" onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>Cancel</button>
+          <div className="modal-footer">
+            <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
             <button type="submit" className="btn-primary">Save Seller</button>
           </div>
         </form>
@@ -76,29 +81,34 @@ const AddProductModal = ({ isOpen, onClose, onSave, initialData }: any) => {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <h3>{initialData ? 'Edit Product' : 'Add New Product'}</h3>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group"><label>Title</label><input className="form-input" value={product.title} onChange={e => setProduct({...product, title: e.target.value})} required /></div>
-          <div className="form-group"><label>SKU</label><input className="form-input" value={product.sku || ''} onChange={e => setProduct({...product, sku: e.target.value})} placeholder="e.g. MUG-001" /></div>
-          <div className="form-group"><label>Category</label><input className="form-input" value={product.category} onChange={e => setProduct({...product, category: e.target.value})} required /></div>
-          <div className="form-group"><label>Buy Price (Cost)</label><input className="form-input" type="number" step="0.01" value={product.buy_price} onChange={e => setProduct({...product, buy_price: e.target.value})} required /></div>
-          <div className="form-group"><label>Sell Price (Retail)</label><input className="form-input" type="number" step="0.01" value={product.sell_price} onChange={e => setProduct({...product, sell_price: e.target.value})} required /></div>
-          <div className="form-group"><label>Stock Quantity</label><input className="form-input" type="number" value={product.stock_quantity} onChange={e => setProduct({...product, stock_quantity: e.target.value})} required /></div>
-          <div className="form-group">
-            <label>Status</label>
-            <select className="form-input" value={product.status || 'PUBLISHED'} onChange={e => setProduct({...product, status: e.target.value})}>
-              <option value="PUBLISHED">PUBLISHED</option>
-              <option value="DRAFT">DRAFT</option>
-              <option value="OUT_OF_STOCK">OUT_OF_STOCK</option>
-              <option value="ARCHIVED">ARCHIVED</option>
-            </select>
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h3>{initialData ? 'Edit Product' : 'Add New Product'}</h3>
+          <button type="button" className="modal-close-btn" onClick={onClose}>✕</button>
+        </div>
+        <form onSubmit={handleSubmit} className="modal-form">
+          <div className="modal-body">
+            <div className="form-group"><label>Title</label><input className="form-input" value={product.title} onChange={e => setProduct({...product, title: e.target.value})} required /></div>
+            <div className="form-group"><label>SKU</label><input className="form-input" value={product.sku || ''} onChange={e => setProduct({...product, sku: e.target.value})} placeholder="e.g. MUG-001" /></div>
+            <div className="form-group"><label>Category</label><input className="form-input" value={product.category} onChange={e => setProduct({...product, category: e.target.value})} required /></div>
+            <div className="form-group"><label>Buy Price (Cost)</label><input className="form-input" type="number" step="0.01" value={product.buy_price} onChange={e => setProduct({...product, buy_price: e.target.value})} required /></div>
+            <div className="form-group"><label>Sell Price (Retail)</label><input className="form-input" type="number" step="0.01" value={product.sell_price} onChange={e => setProduct({...product, sell_price: e.target.value})} required /></div>
+            <div className="form-group"><label>Stock Quantity</label><input className="form-input" type="number" value={product.stock_quantity} onChange={e => setProduct({...product, stock_quantity: e.target.value})} required /></div>
+            <div className="form-group">
+              <label>Status</label>
+              <select className="form-input" value={product.status || 'PUBLISHED'} onChange={e => setProduct({...product, status: e.target.value})}>
+                <option value="PUBLISHED">PUBLISHED</option>
+                <option value="DRAFT">DRAFT</option>
+                <option value="OUT_OF_STOCK">OUT_OF_STOCK</option>
+                <option value="ARCHIVED">ARCHIVED</option>
+              </select>
+            </div>
+            <div className="form-group"><label>Description</label><textarea className="form-input" value={product.description || ''} onChange={e => setProduct({...product, description: e.target.value})} rows={3} /></div>
+            <div className="form-group"><label>Image</label><input type="file" onChange={e => setFile(e.target.files?.[0] || null)} /></div>
           </div>
-          <div className="form-group"><label>Description</label><textarea className="form-input" value={product.description || ''} onChange={e => setProduct({...product, description: e.target.value})} rows={3} /></div>
-          <div className="form-group"><label>Image</label><input type="file" onChange={e => setFile(e.target.files?.[0] || null)} /></div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem' }}>
-            <button type="button" onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>Cancel</button>
+          <div className="modal-footer">
+            <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
             <button type="submit" className="btn-primary">Save Product</button>
           </div>
         </form>
@@ -140,10 +150,14 @@ const SellersManager = () => {
   return (
     <div className="card">
       <div className="page-header">
-        <h3>Sellers Management</h3>
+        <div>
+          <h3>Sellers Management</h3>
+          <p className="page-subheader">Manage verified merchant partners and store details</p>
+        </div>
         <button className="btn-primary" onClick={() => { setEditingSeller(null); setIsModalOpen(true); }}>+ Add Seller</button>
       </div>
-      {loading ? <div className="loading-spinner">Loading...</div> : (
+
+      {loading ? <div className="loading-spinner">Loading sellers...</div> : (
         <div className="table-responsive">
           <table className="data-table">
             <thead>
@@ -159,7 +173,7 @@ const SellersManager = () => {
                   <td><span className={`status-pill ${s.status?.toLowerCase() || 'active'}`}>{s.status || 'ACTIVE'}</span></td>
                   <td>{s.commission_rate || 10}%</td>
                   <td>
-                    <button onClick={() => { setEditingSeller(s); setIsModalOpen(true); }} className="btn-primary" style={{ padding: '4px 8px', marginRight: '10px' }}>Edit</button>
+                    <button onClick={() => { setEditingSeller(s); setIsModalOpen(true); }} className="btn-primary" style={{ padding: '6px 12px', marginRight: '10px' }}>Edit</button>
                     <button onClick={() => handleDeleteSeller(s.seller_id)} className="btn-danger">Delete</button>
                   </td>
                 </tr>
@@ -212,13 +226,18 @@ const ProductManager = () => {
   return (
     <div className="card">
       <div className="page-header">
-        <h3>Product Catalog</h3>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-            <input className="form-input" placeholder="Search title or SKU..." style={{ width: '250px' }} onChange={e => setSearchTerm(e.target.value)} />
-            <button className="btn-primary" onClick={() => { setEditingProduct(null); setIsModalOpen(true); }}>+ Add Product</button>
+        <div>
+          <h3>Product Catalog</h3>
+          <p className="page-subheader">Manage inventory, SKU listings, and pricing</p>
         </div>
+        <button className="btn-primary" onClick={() => { setEditingProduct(null); setIsModalOpen(true); }}>+ Add Product</button>
       </div>
-      {loading ? <div className="loading-spinner">Loading...</div> : (
+
+      <div style={{ marginBottom: '1.25rem' }}>
+        <input className="form-input" placeholder="🔍 Search title or SKU..." style={{ maxWidth: '360px' }} onChange={e => setSearchTerm(e.target.value)} />
+      </div>
+
+      {loading ? <div className="loading-spinner">Loading products...</div> : (
         <div className="table-responsive">
           <table className="data-table">
             <thead>
@@ -230,7 +249,7 @@ const ProductManager = () => {
                   <td>{p.imageUrl && <img src={p.imageUrl} alt={p.title} style={{ width: '45px', height: '45px', objectFit: 'cover', borderRadius: '6px' }} />}</td>
                   <td>
                     <strong>{p.title}</strong>
-                    {p.sku && <div style={{ fontSize: '0.8rem', color: '#666' }}>SKU: {p.sku}</div>}
+                    {p.sku && <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>SKU: {p.sku}</div>}
                   </td>
                   <td>{p.category}</td>
                   <td>${Number(p.buy_price || 0).toFixed(2)}</td>
@@ -238,7 +257,7 @@ const ProductManager = () => {
                   <td>{p.stock_quantity}</td>
                   <td><span className={`status-pill ${p.status?.toLowerCase() || 'published'}`}>{p.status || 'PUBLISHED'}</span></td>
                   <td>
-                    <button onClick={() => { setEditingProduct(p); setIsModalOpen(true); }} className="btn-primary" style={{ padding: '4px 8px', marginRight: '10px' }}>Edit</button>
+                    <button onClick={() => { setEditingProduct(p); setIsModalOpen(true); }} className="btn-primary" style={{ padding: '6px 12px', marginRight: '10px' }}>Edit</button>
                     <button onClick={() => handleDeleteProduct(p.product_id)} className="btn-danger">Delete</button>
                   </td>
                 </tr>
@@ -280,9 +299,13 @@ const OrdersManager = () => {
   return (
     <div className="card">
       <div className="page-header">
-        <h3>Orders Management</h3>
+        <div>
+          <h3>Orders Management</h3>
+          <p className="page-subheader">Track customer orders, payments, and fulfillment status</p>
+        </div>
       </div>
-      {loading ? <div className="loading-spinner">Loading...</div> : (
+
+      {loading ? <div className="loading-spinner">Loading orders...</div> : (
         <div className="table-responsive">
           <table className="data-table">
             <thead>
@@ -299,7 +322,7 @@ const OrdersManager = () => {
                     <select 
                       value={o.status || 'PROCESSING'} 
                       onChange={e => handleStatusChange(o, e.target.value)}
-                      style={{ padding: '4px 8px', borderRadius: '4px' }}
+                      style={{ padding: '6px 10px', borderRadius: '6px', background: '#1f2937', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}
                     >
                       <option value="PENDING">PENDING</option>
                       <option value="PROCESSING">PROCESSING</option>
@@ -418,5 +441,3 @@ const AdminPortal = () => {
 };
 
 export default AdminPortal;
-
-
