@@ -1,4 +1,5 @@
 import { useAdminData } from '../../context/admin-data-context';
+import { dealerContact, dealerLabel } from '../../lib/dealer';
 import { formatCurrency, formatDateTime, toNumber } from '../../lib/format';
 import { Badge, StatusBadge } from '../ui/Badge';
 import { Drawer } from '../ui/Drawer';
@@ -108,29 +109,29 @@ export function OrderDetailDrawer({ order, onClose }: OrderDetailDrawerProps) {
               <p className="cell-sub">No line items were recorded on this order.</p>
             ) : (
               <div className="sourcing">
-                {groups.map((group) => (
+                {groups.map((group) => {
+                  const contact = group.dealer ? dealerContact(group.dealer) : null;
+                  return (
                   <div key={group.dealer?.seller_id ?? 'unassigned'} className="sourcing-group">
                     <div className="sourcing-head">
                       <span className="sourcing-dealer">
                         <Icon name="store" size={15} />
-                        {group.dealer?.store_name ?? 'No dealer assigned'}
+                        {group.dealer ? dealerLabel(group.dealer) : 'No dealer assigned'}
                       </span>
                       {/* Distinguish "no dealer on this item" from "dealer has no contact
-                          details" — email and phone are both optional on a dealer record. */}
+                          details" — every field on a dealer record is optional. */}
                       {!group.dealer ? (
                         <span className="sourcing-warn">
                           <Icon name="alert" size={14} />
                           Assign a dealer
                         </span>
-                      ) : group.dealer.email ? (
-                        <a className="sourcing-contact" href={`mailto:${group.dealer.email}`}>
-                          <Icon name="mail" size={14} />
-                          {group.dealer.email}
-                        </a>
-                      ) : group.dealer.phone_number ? (
-                        <a className="sourcing-contact" href={`tel:${group.dealer.phone_number}`}>
-                          <Icon name="phone" size={14} />
-                          {group.dealer.phone_number}
+                      ) : contact ? (
+                        <a
+                          className="sourcing-contact"
+                          href={`${contact.kind === 'email' ? 'mailto' : 'tel'}:${contact.value}`}
+                        >
+                          <Icon name={contact.kind === 'email' ? 'mail' : 'phone'} size={14} />
+                          {contact.value}
                         </a>
                       ) : (
                         <span className="cell-sub">No contact details</span>
@@ -157,7 +158,8 @@ export function OrderDetailDrawer({ order, onClose }: OrderDetailDrawerProps) {
                       ))}
                     </ul>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>

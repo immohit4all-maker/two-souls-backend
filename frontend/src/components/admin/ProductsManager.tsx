@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAdminData } from '../../context/admin-data-context';
 import { errorMessage } from '../../lib/apiClient';
+import { dealerLabel } from '../../lib/dealer';
 import { formatCurrency, pluralize, toNumber } from '../../lib/format';
 import { stockOf } from '../../lib/product';
 import { createProduct, deleteProduct, updateProduct } from '../../services/productService';
@@ -23,8 +24,11 @@ export function ProductsManager() {
   const [pendingDelete, setPendingDelete] = useState<Product[]>([]);
   const [deleting, setDeleting] = useState(false);
 
-  const dealerName = (id?: string) =>
-    id ? (dealers.find((dealer) => dealer.seller_id === id)?.store_name ?? 'Unknown') : 'Unassigned';
+  const dealerName = (id?: string) => {
+    if (!id) return 'Unassigned';
+    const dealer = dealers.find((candidate) => candidate.seller_id === id);
+    return dealer ? dealerLabel(dealer) : 'Unknown';
+  };
 
   const handleSave = async (input: ProductInput) => {
     try {

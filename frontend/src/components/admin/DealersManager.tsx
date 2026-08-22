@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAdminData } from '../../context/admin-data-context';
 import { errorMessage } from '../../lib/apiClient';
+import { dealerContact, dealerLabel } from '../../lib/dealer';
 import { formatDate, initials, pluralize } from '../../lib/format';
 import { createDealer, deleteDealer, updateDealer } from '../../services/dealerService';
 import { Button } from '../ui/Button';
@@ -28,10 +29,10 @@ export function DealersManager() {
     try {
       if (editing) {
         await updateDealer({ ...input, seller_id: editing.seller_id });
-        toast.success('Dealer updated', input.store_name);
+        toast.success('Dealer updated', dealerLabel({ ...input, seller_id: editing.seller_id }));
       } else {
         await createDealer(input);
-        toast.success('Dealer added', input.store_name);
+        toast.success('Dealer added', dealerLabel({ ...input, seller_id: '' }));
       }
       setModalOpen(false);
       setEditing(null);
@@ -62,29 +63,36 @@ export function DealersManager() {
       key: 'dealer',
       header: 'Dealer',
       primary: true,
-      sortValue: (dealer) => dealer.store_name ?? '',
-      render: (dealer) => (
-        <div className="cell-identity">
-          <span className="cell-avatar" aria-hidden="true">
-            {initials(dealer.store_name)}
-          </span>
-          <div>
-            <p className="cell-title">{dealer.store_name}</p>
-            <p className="cell-sub">{dealer.business_name || '—'}</p>
+      sortValue: (dealer) => dealerLabel(dealer),
+      render: (dealer) => {
+        const label = dealerLabel(dealer);
+        const named = Boolean(dealer.store_name?.trim());
+        return (
+          <div className="cell-identity">
+            <span className="cell-avatar" aria-hidden="true">
+              {initials(label)}
+            </span>
+            <div>
+              <p className={named ? 'cell-title' : 'cell-title cell-untitled'}>{label}</p>
+              <p className="cell-sub">{dealer.business_name?.trim() || '—'}</p>
+            </div>
           </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       key: 'contact',
       header: 'Contact',
       sortValue: (dealer) => dealer.name ?? '',
-      render: (dealer) => (
-        <div>
-          <p>{dealer.name || '—'}</p>
-          <p className="cell-sub">{dealer.email || dealer.phone_number || 'No contact details'}</p>
-        </div>
-      ),
+      render: (dealer) => {
+        const contact = dealerContact(dealer);
+        return (
+          <div>
+            <p>{dealer.name?.trim() || '—'}</p>
+            <p className="cell-sub">{contact ? contact.value : 'No contact details'}</p>
+          </div>
+        );
+      },
     },
     {
       key: 'supplies',
@@ -123,7 +131,7 @@ export function DealersManager() {
             size="sm"
             iconOnly
             iconLeft="edit"
-            aria-label={`Edit ${dealer.store_name}`}
+            aria-label={`Edit ${dealerLabel(dealer)}`}
             onClick={() => {
               setEditing(dealer);
               setModalOpen(true);
@@ -135,7 +143,7 @@ export function DealersManager() {
             iconOnly
             iconLeft="trash"
             className="btn-danger-text"
-            aria-label={`Delete ${dealer.store_name}`}
+            aria-label={`Delete ${dealerLabel(dealer)}`}
             onClick={() => setPendingDelete([dealer])}
           />
         </div>
@@ -170,7 +178,7 @@ export function DealersManager() {
           error={error}
           onRetry={() => void refresh()}
           searchText={(dealer) =>
-            [dealer.store_name, dealer.business_name, dealer.name, dealer.email]
+            [dealerLabel(dealer), dealer.business_name, dealer.name, dealer.email, dealer.phone_number]
               .filter(Boolean)
               .join(' ')
           }
@@ -221,7 +229,7 @@ export function DealersManager() {
         message={
           pendingDelete.length > 1
             ? `${pendingDelete.length} dealers will be permanently removed. Products sourced from them stay in your catalogue but lose their dealer.`
-            : `${pendingDelete[0]?.store_name ?? 'This dealer'} will be permanently removed. Products sourced from them stay in your catalogue but lose their dealer.`
+            : `${dealerLabel(pendingDelete[0], 'This dealer')} will be permanently removed. Products sourced from them stay in your catalogue but lose their dealer.`
         }
         confirmLabel="Delete"
         loading={deleting}
