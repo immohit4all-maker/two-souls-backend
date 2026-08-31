@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAdminData } from '../../context/admin-data-context';
-import { cx, formatCompactCurrency, formatCurrency, formatDate } from '../../lib/format';
+import { cx, DEFAULT_CURRENCY, formatCompactCurrency, formatCurrency, formatDate } from '../../lib/format';
 import { stockOf } from '../../lib/product';
 import {
   countDeltaPercent,
@@ -247,7 +247,7 @@ export function Dashboard() {
                     </p>
                   </div>
                   <span className="mini-amount">
-                    {formatCurrency(order.total_amount, order.currency ?? 'USD')}
+                    {formatCurrency(order.total_amount, order.currency ?? DEFAULT_CURRENCY)}
                   </span>
                   <StatusBadge status={order.status} fallback="PENDING" />
                 </li>

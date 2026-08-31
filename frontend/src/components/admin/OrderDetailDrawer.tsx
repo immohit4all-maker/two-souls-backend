@@ -1,6 +1,6 @@
 import { useAdminData } from '../../context/admin-data-context';
 import { dealerContact, dealerLabel } from '../../lib/dealer';
-import { formatCurrency, formatDateTime, toNumber } from '../../lib/format';
+import { DEFAULT_CURRENCY, formatCurrency, formatDateTime, toNumber } from '../../lib/format';
 import { Badge, StatusBadge } from '../ui/Badge';
 import { Drawer } from '../ui/Drawer';
 import { Icon } from '../ui/Icon';
@@ -27,7 +27,7 @@ interface SourcingGroup {
 export function OrderDetailDrawer({ order, onClose }: OrderDetailDrawerProps) {
   const { dealers, products } = useAdminData();
 
-  const currency = order?.currency ?? 'USD';
+  const currency = order?.currency ?? DEFAULT_CURRENCY;
   const items = order?.items ?? [];
 
   /**

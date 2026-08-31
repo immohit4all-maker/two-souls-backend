@@ -13,25 +13,54 @@ export function toNumber(value: Numeric | null | undefined, fallback = 0): numbe
   return fallback;
 }
 
+/**
+ * Locale and currency for the whole app.
+ *
+ * `en-IN` is doing real work here beyond the ₹ symbol: it groups by lakh and crore
+ * (₹12,50,000 rather than ₹1,250,000) and its compact notation yields ₹12.5L / ₹2.5Cr, which is
+ * how the numbers are actually read in India. Change these two constants to move the app to
+ * another market — nothing else hardcodes a currency.
+ */
+export const LOCALE = 'en-IN';
+export const DEFAULT_CURRENCY = 'INR';
+
+/** Above this, dashboard tiles switch to compact notation. One lakh. */
+const COMPACT_FROM = 100_000;
+
 const currencyFormatters = new Map<string, Intl.NumberFormat>();
 
-export function formatCurrency(value: Numeric | null | undefined, currency = 'USD'): string {
-  let formatter = currencyFormatters.get(currency);
+export function formatCurrency(value: Numeric | null | undefined, currency = DEFAULT_CURRENCY): string {
+  const amount = toNumber(value);
+  // Indian retail prices are written without paise unless there are paise: ₹1,299 and ₹1,299.50,
+  // never ₹1,299.00. Cache per digit-shape since the two need different formatters.
+  const whole = Number.isInteger(amount);
+  const key = `${currency}:${whole ? 0 : 2}`;
+
+  let formatter = currencyFormatters.get(key);
   if (!formatter) {
-    formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency });
-    currencyFormatters.set(currency, formatter);
+    formatter = new Intl.NumberFormat(LOCALE, {
+      style: 'currency',
+      currency,
+      minimumFractionDigits: whole ? 0 : 2,
+      maximumFractionDigits: 2,
+    });
+    currencyFormatters.set(key, formatter);
   }
-  return formatter.format(toNumber(value));
+  return formatter.format(amount);
 }
 
-/** Compact form for dashboard tiles: 12480 -> "$12.5k". */
-export function formatCompactCurrency(value: Numeric | null | undefined, currency = 'USD'): string {
+/** Compact form for dashboard tiles: 1250000 -> "₹12.5L". */
+export function formatCompactCurrency(
+  value: Numeric | null | undefined,
+  currency = DEFAULT_CURRENCY,
+): string {
   const amount = toNumber(value);
-  if (Math.abs(amount) < 10_000) return formatCurrency(amount, currency);
-  return new Intl.NumberFormat('en-US', {
+  if (Math.abs(amount) < COMPACT_FROM) return formatCurrency(amount, currency);
+  return new Intl.NumberFormat(LOCALE, {
     style: 'currency',
     currency,
     notation: 'compact',
+    minimumFractionDigits: 0,
     maximumFractionDigits: 1,
   }).format(amount);
 }
@@ -45,14 +74,14 @@ export function formatDate(iso?: string): string {
   if (!iso) return '—';
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return '—';
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(date);
+  return new Intl.DateTimeFormat(LOCALE, { month: 'short', day: 'numeric', year: 'numeric' }).format(date);
 }
 
 export function formatDateTime(iso?: string): string {
   if (!iso) return '—';
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return '—';
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(LOCALE, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
