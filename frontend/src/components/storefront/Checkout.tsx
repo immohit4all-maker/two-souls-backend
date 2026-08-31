@@ -4,7 +4,13 @@ import { useCart } from '../../context/cart-context';
 import { useToast } from '../ui/toast-context';
 import { createOrder } from '../../services/orderService';
 import { errorMessage } from '../../lib/apiClient';
-import { formatCurrency, generateOrderNumber, money, pluralize } from '../../lib/format';
+import {
+  DEFAULT_CURRENCY,
+  formatCurrency,
+  generateOrderNumber,
+  money,
+  pluralize,
+} from '../../lib/format';
 import { Button } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
 import { Field, TextInput } from '../ui/Field';
@@ -13,11 +19,12 @@ import { ProductImage } from './ProductImage';
 import type { OrderInput, OrderItem } from '../../types';
 
 /**
- * Placeholder shipping policy. There is no carrier integration yet, so this is a single flat
- * rate with a free-over threshold — change these two numbers when real rates are available.
+ * Placeholder shipping policy, in rupees. There is no carrier integration yet, so this is a
+ * single flat rate with a free-over threshold — change these two numbers when real rates are
+ * available. The values follow the common Indian pattern of free delivery past ~₹999.
  */
-const FREE_SHIPPING_THRESHOLD = 75;
-const FLAT_SHIPPING = 6.95;
+const FREE_SHIPPING_THRESHOLD = 999;
+const FLAT_SHIPPING = 79;
 
 interface CheckoutForm {
   full_name: string;
@@ -40,7 +47,8 @@ const EMPTY_FORM: CheckoutForm = {
   city: '',
   state: '',
   postal_code: '',
-  country: '',
+  // Prefilled for the primary market; still editable for anyone shipping elsewhere.
+  country: 'India',
 };
 
 type FormErrors = Partial<Record<keyof CheckoutForm, string>>;
@@ -50,7 +58,7 @@ const REQUIRED_FIELDS: Array<{ key: keyof CheckoutForm; label: string }> = [
   { key: 'email', label: 'Email' },
   { key: 'line1', label: 'Address' },
   { key: 'city', label: 'City' },
-  { key: 'postal_code', label: 'Postcode' },
+  { key: 'postal_code', label: 'PIN code' },
   { key: 'country', label: 'Country' },
 ];
 
@@ -150,7 +158,7 @@ export function Checkout() {
       subtotal: money(subtotal),
       shipping: money(shipping),
       total_amount: money(total),
-      currency: 'USD',
+      currency: DEFAULT_CURRENCY,
       status: 'PENDING',
       payment_status: 'PENDING',
       placed_at: new Date().toISOString(),
@@ -245,7 +253,7 @@ export function Checkout() {
                 />
               </Field>
 
-              <Field label="State / region" error={errors.state}>
+              <Field label="State" error={errors.state}>
                 <TextInput
                   name="state"
                   autoComplete="address-level1"
@@ -254,10 +262,11 @@ export function Checkout() {
                 />
               </Field>
 
-              <Field label="Postcode" required error={errors.postal_code}>
+              <Field label="PIN code" required error={errors.postal_code}>
                 <TextInput
                   name="postal_code"
                   autoComplete="postal-code"
+                  inputMode="numeric"
                   value={form.postal_code}
                   onChange={(event) => update('postal_code', event.target.value)}
                 />

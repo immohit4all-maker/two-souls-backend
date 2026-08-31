@@ -1,5 +1,5 @@
 import { dealerLabel } from './dealer';
-import { timestampOf, toNumber } from './format';
+import { LOCALE, timestampOf, toNumber } from './format';
 import { stockOf } from './product';
 import type { Dealer, Order, Product } from '../types';
 
@@ -77,7 +77,7 @@ function dayKey(date: Date): string {
 /** Daily revenue for the trailing `days` days, oldest first. Days with no orders are zero. */
 export function dailyRevenue(orders: Order[], days = 30, now: Date = new Date()): DayPoint[] {
   const buckets = new Map<string, number>();
-  const labelFormat = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
+  const labelFormat = new Intl.DateTimeFormat(LOCALE, { month: 'short', day: 'numeric' });
   const series: DayPoint[] = [];
 
   for (let offset = days - 1; offset >= 0; offset -= 1) {

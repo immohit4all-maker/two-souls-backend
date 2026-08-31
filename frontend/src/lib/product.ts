@@ -32,12 +32,21 @@ export interface PriceBucket {
 /**
  * Browsing by budget is how people actually shop for gifts, so these back both the hero rail
  * and the catalog filter — one definition, two entry points.
+ *
+ * Bands are set for the Indian market: a typical gifting ladder runs from a small token under
+ * ₹500 up to a considered present past ₹3,000. Adjust to suit your catalogue.
  */
 export const PRICE_BUCKETS: readonly PriceBucket[] = [
-  { id: 'under-25', label: 'Under $25', short: 'Under $25', min: 0, max: 25 },
-  { id: '25-50', label: '$25 to $50', short: '$25–$50', min: 25, max: 50 },
-  { id: '50-100', label: '$50 to $100', short: '$50–$100', min: 50, max: 100 },
-  { id: 'over-100', label: '$100 and up', short: '$100+', min: 100, max: Number.POSITIVE_INFINITY },
+  { id: 'under-500', label: 'Under ₹500', short: 'Under ₹500', min: 0, max: 500 },
+  { id: '500-1500', label: '₹500 to ₹1,500', short: '₹500–₹1.5k', min: 500, max: 1500 },
+  { id: '1500-3000', label: '₹1,500 to ₹3,000', short: '₹1.5k–₹3k', min: 1500, max: 3000 },
+  {
+    id: 'over-3000',
+    label: '₹3,000 and up',
+    short: '₹3k+',
+    min: 3000,
+    max: Number.POSITIVE_INFINITY,
+  },
 ];
 
 export function bucketById(id: string | null): PriceBucket | undefined {

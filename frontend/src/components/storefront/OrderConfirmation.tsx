@@ -1,5 +1,5 @@
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { formatCurrency, toNumber } from '../../lib/format';
+import { DEFAULT_CURRENCY, formatCurrency, toNumber } from '../../lib/format';
 import { Icon } from '../ui/Icon';
 import { ProductImage } from './ProductImage';
 import type { Order } from '../../types';
@@ -67,7 +67,7 @@ export function OrderConfirmation() {
             </div>
             <div className="summary-grand">
               <dt>Total</dt>
-              <dd>{formatCurrency(order.total_amount, order.currency ?? 'USD')}</dd>
+              <dd>{formatCurrency(order.total_amount, order.currency ?? DEFAULT_CURRENCY)}</dd>
             </div>
           </dl>
 

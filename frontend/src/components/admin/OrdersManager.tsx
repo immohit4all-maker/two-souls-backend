@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAdminData } from '../../context/admin-data-context';
 import { errorMessage } from '../../lib/apiClient';
-import { formatCurrency, formatDate, pluralize, titleCase } from '../../lib/format';
+import { DEFAULT_CURRENCY, formatCurrency, formatDate, pluralize, titleCase } from '../../lib/format';
 import { deleteOrder, updateOrder } from '../../services/orderService';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
@@ -99,7 +99,7 @@ export function OrdersManager() {
       align: 'right',
       sortValue: (order) => Number(order.total_amount ?? 0),
       render: (order) => (
-        <strong>{formatCurrency(order.total_amount, order.currency ?? 'USD')}</strong>
+        <strong>{formatCurrency(order.total_amount, order.currency ?? DEFAULT_CURRENCY)}</strong>
       ),
     },
     {
