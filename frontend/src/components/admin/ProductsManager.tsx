@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAdminData } from '../../context/admin-data-context';
 import { errorMessage } from '../../lib/apiClient';
 import { dealerLabel } from '../../lib/dealer';
+import { tagsOf } from '../../lib/giftTags';
 import { formatCurrency, pluralize, toNumber } from '../../lib/format';
 import { stockOf } from '../../lib/product';
 import { createProduct, deleteProduct, updateProduct } from '../../services/productService';
@@ -190,7 +191,13 @@ export function ProductsManager() {
           error={error}
           onRetry={() => void refresh()}
           searchText={(product) =>
-            [product.title, product.sku, product.category, dealerName(product.seller_id)]
+            [
+              product.title,
+              product.sku,
+              product.category,
+              dealerName(product.seller_id),
+              ...tagsOf(product).map((tag) => tag.label),
+            ]
               .filter(Boolean)
               .join(' ')
           }

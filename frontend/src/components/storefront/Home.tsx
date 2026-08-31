@@ -1,14 +1,16 @@
 import { useMemo, useState } from 'react';
 import { useCatalog } from '../../context/catalog-context';
 import { useSavedIds } from '../../lib/savedItems';
-import { bucketById, matchesBucket, PRICE_BUCKETS, sortProducts } from '../../lib/product';
-import { pluralize } from '../../lib/format';
+import { bucketById, matchesBucket, sortProducts } from '../../lib/product';
+import { hasTag, tagsOf } from '../../lib/giftTags';
 import { Button } from '../ui/Button';
 import { EmptyState } from '../ui/EmptyState';
 import { Icon } from '../ui/Icon';
 import { Skeleton } from '../ui/Skeleton';
 import { CatalogToolbar } from './CatalogToolbar';
 import type { CatalogFilters } from './CatalogToolbar';
+import { CategoryRail } from './CategoryRail';
+import { GiftFinder } from './GiftFinder';
 import { ProductCard } from './ProductCard';
 import { ProductImage } from './ProductImage';
 
@@ -16,6 +18,7 @@ const DEFAULT_FILTERS: CatalogFilters = {
   query: '',
   category: 'ALL',
   priceBucket: null,
+  tag: null,
   sort: 'featured',
   savedOnly: false,
 };
@@ -36,6 +39,15 @@ export function Home() {
   const savedIds = useSavedIds();
   const [filters, setFilters] = useState<CatalogFilters>(DEFAULT_FILTERS);
 
+  const update = (next: Partial<CatalogFilters>) =>
+    setFilters((current) => ({ ...current, ...next }));
+
+  /** Pick a facet, then take the shopper straight to the results. */
+  const pickAndScroll = (next: Partial<CatalogFilters>) => {
+    update(next);
+    scrollToCatalog();
+  };
+
   const categories = useMemo(() => {
     const unique = new Set<string>();
     products.forEach((product) => {
@@ -52,11 +64,18 @@ export function Home() {
       if (filters.savedOnly && !savedIds.includes(product.product_id)) return false;
       if (filters.category !== 'ALL' && product.category !== filters.category) return false;
       if (!matchesBucket(product, bucket)) return false;
+      if (!hasTag(product, filters.tag)) return false;
       if (!needle) return true;
 
-      // Deliberately excludes the sourcing dealer — that is private supply-side information
-      // and must not be discoverable through the shop's search box.
-      const haystack = [product.title, product.category, product.description, product.sku]
+      // Tag labels are searchable, so typing "diwali" or "for her" finds the tagged pieces.
+      // Deliberately excludes the sourcing dealer — that is private supply-side information.
+      const haystack = [
+        product.title,
+        product.category,
+        product.description,
+        product.sku,
+        ...tagsOf(product).map((tag) => tag.label),
+      ]
         .filter(Boolean)
         .join(' ')
         .toLowerCase();
@@ -88,18 +107,29 @@ export function Home() {
             hand, so the thing you give feels considered rather than picked off a shelf.
           </p>
 
-          <div className="hero-actions">
-            <Button size="lg" iconRight="arrow-right" onClick={scrollToCatalog}>
-              Shop all gifts
+          {/* Search sits in the hero as well as the toolbar: both write the same filter, so
+              typing here updates the grid below and Enter jumps you to it. */}
+          <form
+            className="hero-search"
+            role="search"
+            onSubmit={(event) => {
+              event.preventDefault();
+              scrollToCatalog();
+            }}
+          >
+            <Icon name="search" size={19} className="hero-search-icon" />
+            <input
+              type="search"
+              className="input hero-search-input"
+              placeholder="Search for a gift, a material, an occasion…"
+              value={filters.query}
+              onChange={(event) => update({ query: event.target.value })}
+              aria-label="Search the collection"
+            />
+            <Button type="submit" size="md" className="hero-search-btn">
+              Search
             </Button>
-            <Button
-              size="lg"
-              variant="secondary"
-              onClick={() => document.getElementById('budget-heading')?.scrollIntoView({ behavior: 'smooth' })}
-            >
-              Shop by budget
-            </Button>
-          </div>
+          </form>
 
           <dl className="hero-stats">
             <div>
@@ -112,7 +142,7 @@ export function Home() {
             </div>
             <div>
               <dt>Shipping</dt>
-              <dd>Worldwide</dd>
+              <dd>Across India</dd>
             </div>
           </dl>
         </div>
@@ -148,6 +178,24 @@ export function Home() {
         </div>
       </section>
 
+      {!loading && !error && (
+        <CategoryRail
+          products={products}
+          active={filters.category}
+          onPick={(category) => pickAndScroll({ category })}
+        />
+      )}
+
+      {!loading && !error && (
+        <GiftFinder
+          products={products}
+          activeTag={filters.tag}
+          activeBucket={filters.priceBucket}
+          onPickTag={(tag) => pickAndScroll({ tag })}
+          onPickBucket={(priceBucket) => pickAndScroll({ priceBucket })}
+        />
+      )}
+
       <section className="promises" aria-label="Why shop with us">
         {PROMISES.map((promise) => (
           <div key={promise.title} className="promise">
@@ -160,43 +208,6 @@ export function Home() {
             </div>
           </div>
         ))}
-      </section>
-
-      <section className="budget" aria-labelledby="budget-heading">
-        <div className="section-head">
-          <div>
-            <p className="eyebrow">Shop by budget</p>
-            <h2 className="section-title" id="budget-heading">
-              Find something in range
-            </h2>
-          </div>
-        </div>
-
-        <div className="budget-grid">
-          {PRICE_BUCKETS.map((bucket) => {
-            const count = products.filter((product) => matchesBucket(product, bucket)).length;
-            return (
-              <button
-                key={bucket.id}
-                type="button"
-                className="budget-card"
-                onClick={() => {
-                  setFilters((current) => ({
-                    ...current,
-                    priceBucket: current.priceBucket === bucket.id ? null : bucket.id,
-                  }));
-                  scrollToCatalog();
-                }}
-              >
-                <span className="budget-label">{bucket.label}</span>
-                <span className="budget-count">
-                  {loading ? '—' : `${count} ${pluralize(count, 'gift')}`}
-                </span>
-                <Icon name="arrow-right" size={17} className="budget-arrow" />
-              </button>
-            );
-          })}
-        </div>
       </section>
 
       <section className="catalog" id="catalog" aria-labelledby="catalog-heading">
@@ -214,7 +225,7 @@ export function Home() {
           categories={categories}
           savedCount={savedIds.length}
           resultCount={visible.length}
-          onChange={(next) => setFilters((current) => ({ ...current, ...next }))}
+          onChange={update}
           onReset={() => setFilters(DEFAULT_FILTERS)}
         />
 

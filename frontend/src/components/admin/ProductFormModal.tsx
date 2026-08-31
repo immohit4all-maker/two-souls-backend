@@ -6,6 +6,7 @@ import { Button } from '../ui/Button';
 import { Field, SelectInput, TextArea, TextInput } from '../ui/Field';
 import { Icon } from '../ui/Icon';
 import { Modal } from '../ui/Modal';
+import { TagPicker } from './TagPicker';
 import { PRODUCT_STATUSES } from '../../types';
 import type { Dealer, Product, ProductInput, ProductStatus } from '../../types';
 
@@ -20,6 +21,7 @@ interface ProductForm {
   description: string;
   seller_id: string;
   imageUrl: string;
+  tags: string[];
 }
 
 const EMPTY: ProductForm = {
@@ -33,6 +35,7 @@ const EMPTY: ProductForm = {
   description: '',
   seller_id: '',
   imageUrl: '',
+  tags: [],
 };
 
 type Errors = Partial<Record<keyof ProductForm | 'image', string>>;
@@ -49,6 +52,7 @@ function toForm(product: Product): ProductForm {
     description: product.description ?? '',
     seller_id: product.seller_id ?? '',
     imageUrl: product.imageUrl ?? '',
+    tags: Array.isArray(product.tags) ? product.tags : [],
   };
 }
 
@@ -83,7 +87,8 @@ export function ProductFormModal({ initial, dealers, onClose, onSave }: ProductF
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  const update = (key: keyof ProductForm, value: string) => {
+  // `tags` is the one non-string field, so it gets its own setter rather than widening this.
+  const update = (key: Exclude<keyof ProductForm, 'tags'>, value: string) => {
     setForm((current) => ({ ...current, [key]: value }));
     setErrors((current) => (current[key] ? { ...current, [key]: undefined } : current));
   };
@@ -135,6 +140,7 @@ export function ProductFormModal({ initial, dealers, onClose, onSave }: ProductF
         description: form.description.trim() || undefined,
         seller_id: form.seller_id || undefined,
         imageUrl: form.imageUrl || undefined,
+        tags: form.tags.length > 0 ? form.tags : undefined,
         // Numbers travel as strings — see the `Numeric` note in src/types.
         buy_price: form.buy_price.trim(),
         sell_price: form.sell_price.trim(),
@@ -250,6 +256,15 @@ export function ProductFormModal({ initial, dealers, onClose, onSave }: ProductF
             value={form.description}
             onChange={(e) => update('description', e.target.value)}
           />
+        </Field>
+
+        <Field
+          label="Gift finder tags"
+          error={errors.tags}
+          hint="Where this shows up when shoppers browse by occasion, festival or recipient"
+          className="field-full"
+        >
+          <TagPicker value={form.tags} onChange={(tags) => setForm((c) => ({ ...c, tags }))} />
         </Field>
 
         <Field label="Image" error={errors.image} className="field-full">
