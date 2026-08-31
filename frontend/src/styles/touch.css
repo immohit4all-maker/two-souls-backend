@@ -1,0 +1,111 @@
+/**
+ * Touch and small-screen hardening.
+ *
+ * Loaded last so it can override component defaults. Everything here is keyed off
+ * `pointer: coarse` or a narrow viewport rather than a device sniff.
+ */
+
+@media (pointer: coarse) {
+  /*
+   * iOS Safari zooms the whole page when a focused input has a font-size below 16px, and does
+   * not zoom back out. Our inputs are 14px for density on desktop, so bump them on touch.
+   */
+  .input,
+  .stepper-value,
+  select.input,
+  textarea.input {
+    font-size: 16px;
+  }
+
+  /*
+   * Comfortable tap targets. Several controls are sized for a mouse (32–36px); on touch they
+   * need roughly 44px to hit reliably.
+   */
+  .btn-sm {
+    height: 40px;
+    padding-inline: var(--space-4);
+  }
+
+  .btn-icon.btn-sm {
+    width: 40px;
+  }
+
+  .product-save,
+  .product-add-inline,
+  .cart-line-remove,
+  .dialog-close,
+  .toast-close {
+    width: 44px;
+    height: 44px;
+  }
+
+  .stepper-sm .stepper-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .stepper-sm .stepper-value {
+    width: 40px;
+    height: 40px;
+  }
+
+  .chip,
+  .finder-tab {
+    min-height: 40px;
+  }
+
+  .active-pill {
+    min-height: 36px;
+  }
+
+  /* The grey flash on tap reads as a rendering glitch rather than feedback. */
+  a,
+  button,
+  label,
+  [role='button'] {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Hover-only affordances never fire on touch, so make sure nothing is hidden behind them. */
+  .product-quick-add {
+    display: none;
+  }
+}
+
+/* Horizontal rails: keep momentum scrolling, drop the scrollbar chrome. */
+.finder-tabs,
+.chip-row,
+.dt-scroll,
+.admin-sidebar {
+  scrollbar-width: none;
+}
+
+.finder-tabs::-webkit-scrollbar,
+.admin-sidebar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /*
+   * On a phone the hero image is ~340px tall. Leading with it pushes the headline and the
+   * search box below the fold, which defeats the point of promoting search into the hero.
+   * Tablet keeps the image first, where there is room for both.
+   */
+  .hero-visual {
+    order: 0;
+  }
+
+  .hero-collage {
+    max-width: 420px;
+    margin-inline: auto;
+  }
+
+  /* Long unbroken strings — order references, emails — must not widen the page. */
+  .cell-sub,
+  .cart-line-title,
+  .summary-title,
+  .toast-description,
+  .dt-card-field dd {
+    overflow-wrap: anywhere;
+  }
+}

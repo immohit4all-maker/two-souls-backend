@@ -1,5 +1,6 @@
-import { PRICE_BUCKETS, SORT_OPTIONS } from '../../lib/product';
+import { bucketById, SORT_OPTIONS } from '../../lib/product';
 import type { SortOption } from '../../lib/product';
+import { tagById } from '../../lib/giftTags';
 import { cx } from '../../lib/format';
 import { Icon } from '../ui/Icon';
 
@@ -7,6 +8,8 @@ export interface CatalogFilters {
   query: string;
   category: string;
   priceBucket: string | null;
+  /** A gift-finder tag id — occasion, festival or recipient. */
+  tag: string | null;
   sort: SortOption;
   savedOnly: boolean;
 }
@@ -20,12 +23,18 @@ export interface CatalogToolbarProps {
   onReset: () => void;
 }
 
+interface ActivePill {
+  key: string;
+  label: string;
+  clear: () => void;
+}
+
 /**
- * Search, category, price and sort controls.
+ * Search, category, sort and the active-filter summary.
  *
- * The old storefront had category pills only — no search, no price filter, no sort — which is
- * the bare minimum for browsing a gift catalogue. Categories are a real tablist so arrow keys
- * and screen readers behave as expected.
+ * The summary row matters now that filters can be set from three different places (the hero
+ * search, the category rail and the gift finder) — without it a shopper who clicked "Diwali"
+ * further up the page has no idea why the grid is short, or how to undo it.
  */
 export function CatalogToolbar({
   filters,
@@ -35,11 +44,28 @@ export function CatalogToolbar({
   onChange,
   onReset,
 }: CatalogToolbarProps) {
-  const hasActiveFilters =
-    filters.query !== '' ||
-    filters.category !== 'ALL' ||
-    filters.priceBucket !== null ||
-    filters.savedOnly;
+  const bucket = bucketById(filters.priceBucket);
+  const tag = tagById(filters.tag);
+
+  const active: ActivePill[] = [
+    filters.query.trim() && {
+      key: 'query',
+      label: `“${filters.query.trim()}”`,
+      clear: () => onChange({ query: '' }),
+    },
+    filters.category !== 'ALL' && {
+      key: 'category',
+      label: filters.category,
+      clear: () => onChange({ category: 'ALL' }),
+    },
+    tag && { key: 'tag', label: tag.label, clear: () => onChange({ tag: null }) },
+    bucket && { key: 'bucket', label: bucket.label, clear: () => onChange({ priceBucket: null }) },
+    filters.savedOnly && {
+      key: 'saved',
+      label: 'Saved only',
+      clear: () => onChange({ savedOnly: false }),
+    },
+  ].filter((pill): pill is ActivePill => Boolean(pill));
 
   return (
     <div className="catalog-toolbar">
@@ -87,52 +113,48 @@ export function CatalogToolbar({
         </div>
       </div>
 
-      <div className="catalog-toolbar-row catalog-toolbar-filters">
-        <div className="chip-row" role="tablist" aria-label="Product categories">
-          {categories.map((category) => {
-            const active = filters.category === category;
-            return (
-              <button
-                key={category}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                tabIndex={active ? 0 : -1}
-                className={cx('chip', active && 'chip-active')}
-                onClick={() => onChange({ category })}
-              >
-                {category === 'ALL' ? 'Everything' : category}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="chip-row">
-          {PRICE_BUCKETS.map((bucket) => {
-            const active = filters.priceBucket === bucket.id;
-            return (
-              <button
-                key={bucket.id}
-                type="button"
-                className={cx('chip', 'chip-price', active && 'chip-active')}
-                onClick={() => onChange({ priceBucket: active ? null : bucket.id })}
-                aria-pressed={active}
-              >
-                {bucket.short}
-              </button>
-            );
-          })}
-        </div>
+      {/* Plain toggle buttons rather than role="tab": these are independent filters, and a
+          tablist without arrow-key navigation announces behaviour the widget does not have. */}
+      <div className="chip-row" role="group" aria-label="Filter by category">
+        {categories.map((category) => {
+          const selected = filters.category === category;
+          return (
+            <button
+              key={category}
+              type="button"
+              aria-pressed={selected}
+              className={cx('chip', selected && 'chip-active')}
+              onClick={() => onChange({ category })}
+            >
+              {category === 'ALL' ? 'Everything' : category}
+            </button>
+          );
+        })}
       </div>
 
       <div className="catalog-result-bar">
         <p className="catalog-count" aria-live="polite">
           {resultCount} {resultCount === 1 ? 'gift' : 'gifts'}
         </p>
-        {hasActiveFilters && (
-          <button type="button" className="catalog-reset" onClick={onReset}>
-            Clear filters
-          </button>
+
+        {active.length > 0 && (
+          <div className="active-filters">
+            {active.map((pill) => (
+              <button
+                key={pill.key}
+                type="button"
+                className="active-pill"
+                onClick={pill.clear}
+                aria-label={`Remove filter: ${pill.label}`}
+              >
+                {pill.label}
+                <Icon name="close" size={13} />
+              </button>
+            ))}
+            <button type="button" className="catalog-reset" onClick={onReset}>
+              Clear all
+            </button>
+          </div>
         )}
       </div>
     </div>

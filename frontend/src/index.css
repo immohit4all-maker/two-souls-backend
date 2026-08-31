@@ -10,3 +10,6 @@
 @import './components/storefront/storefront.css';
 @import './components/storefront/checkout.css';
 @import './components/admin/admin.css';
+
+/* Last: touch and small-screen overrides. */
+@import './styles/touch.css';

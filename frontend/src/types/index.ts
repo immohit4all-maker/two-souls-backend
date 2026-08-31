@@ -58,13 +58,18 @@ export interface Product {
   category?: string;
   sku?: string;
   description?: string;
-  /** Cost to the marketplace. Admin-only — never rendered on the storefront. */
+  /** What you pay the dealer. Admin-only — never rendered on the storefront. */
   buy_price?: Numeric;
   /** Retail price shown to shoppers. */
   sell_price?: Numeric;
   stock_quantity?: Numeric;
   status?: ProductStatus;
   imageUrl?: string;
+  /**
+   * Gift-finder facets this product belongs to — occasions, festivals and recipients.
+   * Values are ids from `GIFT_TAGS` in lib/giftTags.
+   */
+  tags?: string[];
   /** Which dealer this item is sourced from. Admin-only — never shown to shoppers. */
   seller_id?: string;
   created_at?: string;

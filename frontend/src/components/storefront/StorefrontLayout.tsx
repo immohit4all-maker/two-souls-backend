@@ -41,8 +41,8 @@ export function StorefrontLayout() {
             >
               Shop
             </NavLink>
-            <a className="store-nav-link" href="/#budget-heading">
-              By budget
+            <a className="store-nav-link" href="/#finder-heading">
+              Find a gift
             </a>
           </nav>
 
@@ -89,7 +89,8 @@ export function StorefrontLayout() {
 
           <nav className="store-footer-links" aria-label="Footer">
             <Link to="/">Shop all</Link>
-            <a href="/#budget-heading">By budget</a>
+            <a href="/#categories-heading">Categories</a>
+            <a href="/#finder-heading">Find a gift</a>
           </nav>
         </div>
 
