@@ -52,13 +52,32 @@ export interface Dealer {
   updated_at?: string;
 }
 
+/** One dealer who can supply a product, at their own price. */
+export interface ProductSourcing {
+  seller_id: string;
+  /** What this particular dealer charges you. Admin-only. */
+  buy_price?: Numeric;
+}
+
 export interface Product {
   product_id: string;
   title: string;
   category?: string;
   sku?: string;
   description?: string;
-  /** What you pay the dealer. Admin-only — never rendered on the storefront. */
+  /**
+   * Every dealer who can supply this item, each with their own cost.
+   *
+   * Read this through `sourcingOf()` in lib/product rather than directly — the helper falls
+   * back to the legacy single-dealer fields below for records created before this existed.
+   */
+  sourcing?: ProductSourcing[];
+  /**
+   * Mirror of the cheapest `sourcing` entry, kept in sync on every save.
+   *
+   * Retained because a cart line and an order line item snapshot a single dealer, and because
+   * records predating multi-dealer sourcing only have these. Not edited directly any more.
+   */
   buy_price?: Numeric;
   /** Retail price shown to shoppers. */
   sell_price?: Numeric;
@@ -70,7 +89,7 @@ export interface Product {
    * Values are ids from `GIFT_TAGS` in lib/giftTags.
    */
   tags?: string[];
-  /** Which dealer this item is sourced from. Admin-only — never shown to shoppers. */
+  /** Mirror of the cheapest `sourcing` entry's dealer. See `buy_price` above. */
   seller_id?: string;
   created_at?: string;
   updated_at?: string;

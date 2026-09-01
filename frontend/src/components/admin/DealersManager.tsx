@@ -3,6 +3,7 @@ import { useAdminData } from '../../context/admin-data-context';
 import { errorMessage } from '../../lib/apiClient';
 import { dealerContact, dealerLabel } from '../../lib/dealer';
 import { formatDate, initials, pluralize } from '../../lib/format';
+import { sourcingOf } from '../../lib/product';
 import { createDealer, deleteDealer, updateDealer } from '../../services/dealerService';
 import { Button } from '../ui/Button';
 import { ConfirmDialog } from '../ui/ConfirmDialog';
@@ -22,8 +23,12 @@ export function DealersManager() {
   const [pendingDelete, setPendingDelete] = useState<Dealer[]>([]);
   const [deleting, setDeleting] = useState(false);
 
+  // A product can now list several dealers, so count anything this dealer can supply — not just
+  // the ones where they happen to be the cheapest.
   const itemsFrom = (dealerId: string) =>
-    products.filter((product) => product.seller_id === dealerId).length;
+    products.filter((product) =>
+      sourcingOf(product).some((entry) => entry.seller_id === dealerId),
+    ).length;
 
   const handleSave = async (input: DealerInput) => {
     try {

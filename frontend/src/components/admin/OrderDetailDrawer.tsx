@@ -1,5 +1,6 @@
 import { useAdminData } from '../../context/admin-data-context';
 import { dealerContact, dealerLabel } from '../../lib/dealer';
+import { primarySourcing } from '../../lib/product';
 import { DEFAULT_CURRENCY, formatCurrency, formatDateTime, toNumber } from '../../lib/format';
 import { Badge, StatusBadge } from '../ui/Badge';
 import { Drawer } from '../ui/Drawer';
@@ -33,14 +34,13 @@ export function OrderDetailDrawer({ order, onClose }: OrderDetailDrawerProps) {
   /**
    * Resolve each line to a dealer and group.
    *
-   * The line item carries its own `seller_id` snapshot, but fall back to the product record for
-   * older orders written before that was captured.
+   * The line item carries its own `seller_id` snapshot taken at checkout. Older orders predate
+   * that, so fall back to the product's cheapest current dealer.
    */
   const groups: SourcingGroup[] = [];
   for (const item of items) {
-    const dealerId =
-      item.seller_id ??
-      products.find((product) => product.product_id === item.product_id)?.seller_id;
+    const product = products.find((candidate) => candidate.product_id === item.product_id);
+    const dealerId = item.seller_id ?? (product ? primarySourcing(product)?.seller_id : undefined);
     const dealer = dealerId ? (dealers.find((d) => d.seller_id === dealerId) ?? null) : null;
 
     const existing = groups.find((group) => group.dealer?.seller_id === dealer?.seller_id);
