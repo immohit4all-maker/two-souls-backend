@@ -1,5 +1,71 @@
-import type { Product } from '../types';
+import type { Product, ProductSourcing } from '../types';
 import { toNumber } from './format';
+
+/**
+ * The catalogue's fixed category list.
+ *
+ * Shared so the admin dropdown and anything else reading categories cannot drift. A product
+ * saved under an older, free-text category keeps it — see ProductFormModal, which appends any
+ * unrecognised value to the options rather than silently reassigning the product.
+ */
+export const PRODUCT_CATEGORIES = [
+  'German Silver',
+  '999 Fine Silver',
+  'Home Decor',
+  'Others',
+] as const;
+
+/**
+ * Every dealer who can supply this product.
+ *
+ * Falls back to the legacy single-dealer fields so records created before multi-dealer sourcing
+ * still resolve to one entry instead of appearing unsourced.
+ */
+export function sourcingOf(product: Product): ProductSourcing[] {
+  if (Array.isArray(product.sourcing) && product.sourcing.length > 0) {
+    return product.sourcing.filter((entry) => Boolean(entry?.seller_id));
+  }
+  if (product.seller_id) {
+    return [{ seller_id: product.seller_id, buy_price: product.buy_price }];
+  }
+  return [];
+}
+
+function knownCosts(product: Product): number[] {
+  const costs = sourcingOf(product)
+    .map((entry) => entry.buy_price)
+    .filter((value): value is NonNullable<typeof value> => value !== undefined && value !== '')
+    .map((value) => toNumber(value));
+
+  if (costs.length > 0) return costs;
+  // A legacy product may carry a cost with no dealer attached.
+  if (product.buy_price !== undefined && product.buy_price !== '') return [toNumber(product.buy_price)];
+  return [];
+}
+
+/** Cheapest dealer for this product — the one used as the default when an order is placed. */
+export function primarySourcing(product: Product): ProductSourcing | undefined {
+  const entries = sourcingOf(product);
+  if (entries.length === 0) return undefined;
+
+  return entries.reduce((best, entry) => {
+    const bestCost = best.buy_price === undefined ? Number.POSITIVE_INFINITY : toNumber(best.buy_price);
+    const entryCost = entry.buy_price === undefined ? Number.POSITIVE_INFINITY : toNumber(entry.buy_price);
+    return entryCost < bestCost ? entry : best;
+  });
+}
+
+export function lowestCost(product: Product): number | undefined {
+  const costs = knownCosts(product);
+  return costs.length > 0 ? Math.min(...costs) : undefined;
+}
+
+/** Spread of costs across dealers, for showing "₹400–₹520" in the admin table. */
+export function costRange(product: Product): { min: number; max: number } | undefined {
+  const costs = knownCosts(product);
+  if (costs.length === 0) return undefined;
+  return { min: Math.min(...costs), max: Math.max(...costs) };
+}
 
 /** Stock as a number, or undefined when the field was never set. */
 export function stockOf(product: Product): number | undefined {

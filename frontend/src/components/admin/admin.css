@@ -598,6 +598,122 @@
   cursor: pointer;
 }
 
+/* ============================================================ Multi-dealer sourcing editor */
+
+.sourcing-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.sourcing-empty {
+  font-size: var(--text-sm);
+  color: var(--ink-3);
+}
+
+.sourcing-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sourcing-row-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 140px auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.sourcing-dealer-select {
+  min-width: 0;
+}
+
+/* Number input with a leading currency symbol. */
+.cost-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.cost-symbol {
+  position: absolute;
+  left: var(--space-3);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--ink-3);
+  pointer-events: none;
+}
+
+.cost-input .input {
+  padding-left: var(--space-8);
+  /* Hide the spinners: the arrows are useless at this step size and eat width. */
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.cost-input .input::-webkit-outer-spin-button,
+.cost-input .input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.sourcing-row-note:empty {
+  display: none;
+}
+
+.sourcing-best {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--success);
+}
+
+.sourcing-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding-top: var(--space-1);
+}
+
+@media (max-width: 640px) {
+  .sourcing-row-controls {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'dealer remove'
+      'cost   cost';
+  }
+
+  .sourcing-dealer-select {
+    grid-area: dealer;
+  }
+
+  .cost-input {
+    grid-area: cost;
+  }
+
+  /* The delete button is the third child and has no area of its own otherwise. */
+  .sourcing-row-controls > .btn {
+    grid-area: remove;
+  }
+
+  .sourcing-row {
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sourcing-rows > li:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
 /* ============================================================ Gift tag picker */
 
 .tag-picker {

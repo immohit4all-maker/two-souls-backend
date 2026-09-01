@@ -65,6 +65,15 @@ export function formatCompactCurrency(
   }).format(amount);
 }
 
+/** Just the symbol — for prefixing a bare number input. */
+export function currencySymbol(currency = DEFAULT_CURRENCY): string {
+  return (
+    new Intl.NumberFormat(LOCALE, { style: 'currency', currency, minimumFractionDigits: 0 })
+      .formatToParts(0)
+      .find((part) => part.type === 'currency')?.value ?? ''
+  );
+}
+
 /** Fixed-2 string, for building API payloads (see the `Numeric` note in types). */
 export function money(value: number): string {
   return (Number.isFinite(value) ? value : 0).toFixed(2);

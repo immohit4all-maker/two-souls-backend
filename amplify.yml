@@ -1,3 +1,17 @@
+# IMPORTANT — this app is a single-page app using BrowserRouter. The build emits exactly one
+# HTML file (dist/index.html); routes like /admin, /checkout and /product/:id exist only in
+# JavaScript. A direct hit or a browser refresh on any of those asks Amplify for an object that
+# is not there, and returns 404.
+#
+# Amplify Hosting does NOT read redirect rules from this file — they must be set on the app
+# itself, under App settings -> Rewrites and redirects:
+#
+#   Source: </^[^.]+$|\.(?!(css|gif|ico|jpg|jpeg|js|json|map|png|svg|txt|webp|avif|woff|woff2|ttf|eot|xml|webmanifest)$)([^.]+$)/>
+#   Target: /index.html
+#   Type:   200 (Rewrite)
+#
+# That serves index.html for any path without a file extension and lets React Router resolve it,
+# while leaving real assets under /assets/* to be served normally.
 version: 1
 applications:
   - frontend:

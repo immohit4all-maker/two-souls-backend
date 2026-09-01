@@ -4,7 +4,7 @@ import { errorMessage } from '../../lib/apiClient';
 import { dealerLabel } from '../../lib/dealer';
 import { tagsOf } from '../../lib/giftTags';
 import { formatCurrency, pluralize, toNumber } from '../../lib/format';
-import { stockOf } from '../../lib/product';
+import { costRange, lowestCost, sourcingOf, stockOf } from '../../lib/product';
 import { createProduct, deleteProduct, updateProduct } from '../../services/productService';
 import { Badge, StatusBadge } from '../ui/Badge';
 import { Button } from '../ui/Button';
@@ -30,6 +30,13 @@ export function ProductsManager() {
     const dealer = dealers.find((candidate) => candidate.seller_id === id);
     return dealer ? dealerLabel(dealer) : 'Unknown';
   };
+
+  /** Names of every dealer who can supply a product, cheapest first. */
+  const supplierNames = (product: Product): string[] =>
+    sourcingOf(product)
+      .slice()
+      .sort((a, b) => toNumber(a.buy_price) - toNumber(b.buy_price))
+      .map((entry) => dealerName(entry.seller_id));
 
   const handleSave = async (input: ProductInput) => {
     try {
@@ -92,8 +99,21 @@ export function ProductsManager() {
     {
       key: 'dealer',
       header: 'Sourced from',
-      sortValue: (product) => dealerName(product.seller_id),
-      render: (product) => <span className="cell-sub">{dealerName(product.seller_id)}</span>,
+      sortValue: (product) => supplierNames(product)[0] ?? '',
+      render: (product) => {
+        const names = supplierNames(product);
+        if (names.length === 0) return <span className="cell-sub">Unassigned</span>;
+        return (
+          <div>
+            <p className="cell-sub">{names[0]}</p>
+            {names.length > 1 && (
+              <p className="cell-sub" title={names.join(', ')}>
+                +{names.length - 1} more
+              </p>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: 'margin',
@@ -101,14 +121,31 @@ export function ProductsManager() {
       align: 'right',
       sortValue: (product) => toNumber(product.sell_price),
       render: (product) => {
-        const cost = toNumber(product.buy_price);
         const retail = toNumber(product.sell_price);
-        const margin = retail > 0 ? ((retail - cost) / retail) * 100 : 0;
+        const range = costRange(product);
+        const best = lowestCost(product);
+
+        if (range === undefined || best === undefined) {
+          return (
+            <div className="cell-money">
+              <p className="cell-title">{formatCurrency(retail)}</p>
+              <p className="cell-sub">No cost recorded</p>
+            </div>
+          );
+        }
+
+        // Margin is quoted against the cheapest dealer — the best case you can achieve.
+        const margin = retail > 0 ? ((retail - best) / retail) * 100 : 0;
+        const spread =
+          range.min === range.max
+            ? formatCurrency(range.min)
+            : `${formatCurrency(range.min)}–${formatCurrency(range.max)}`;
+
         return (
           <div className="cell-money">
             <p className="cell-title">{formatCurrency(retail)}</p>
             <p className="cell-sub">
-              {formatCurrency(cost)} cost · {margin.toFixed(0)}% margin
+              {spread} cost · {margin.toFixed(0)}% margin
             </p>
           </div>
         );
@@ -195,7 +232,7 @@ export function ProductsManager() {
               product.title,
               product.sku,
               product.category,
-              dealerName(product.seller_id),
+              ...supplierNames(product),
               ...tagsOf(product).map((tag) => tag.label),
             ]
               .filter(Boolean)
